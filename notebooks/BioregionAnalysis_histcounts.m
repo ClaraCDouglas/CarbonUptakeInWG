@@ -1,11 +1,13 @@
-clearvars
+% clearvars
 
 home = 'C:\Users\ccd1n18\Documents\Projects\Carbon-Uptake-in-WG_Manuscript\'; % Clara laptop Doc folder
 plot_folder = [home 'Figures\'];
+make_plots =0;
 
 LONG_MIN=-180; LONG_MAX=180; LAT_MIN=-90; LAT_MAX=90;
 [Z,LONG,LAT]=m_tbase([LONG_MIN LONG_MAX LAT_MIN LAT_MAX]);
 
+cd C:\Users\ccd1n18\Documents\Projects\Carbon-Uptake-in-WG_Manuscript\Workspace_Variables
 load('latlon_m.mat')
 load('vgpm_imported.mat')
 load('ProcessedData.mat')
@@ -17,6 +19,7 @@ load('ProcessedData.mat')
 
 Z_interp = interp2(LONG,LAT,Z,lon_m,lat_m);
 
+if make_plots
 figure
 surf(LONG,LAT,Z) % or pcolor
 shading flat
@@ -24,11 +27,11 @@ shading flat
 figure
 surf(lon_m,lat_m,Z_interp) % or pcolor
 shading flat
+end
 
-cd C:\Users\ccd1n18\Documents\Projects\Carbon-Uptake-in-WG_Manuscript\Workspace_Variables
 load('openshelf_coord.mat')
 load('box_lat_lons.mat', 'andrex_box')
-%% Import regions: shelf and open ocean then andrex box
+%% Allocate bathymetry to ANDREX box
 % load('latlon_m.mat')
 
 IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
@@ -305,5 +308,3 @@ for ix=1:6 % 1:6 to remove above sea level or 1:length(N2(:,1))
     end
 end
 
-figure
-histogram2(x,y,Xedges,Yedges(2:end))

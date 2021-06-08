@@ -5,7 +5,6 @@
 % make array of zeros
     % array(listedvales)==ix
 % test
-
 curious=findweddell(bin==1);
 bioregionbin=zeros(1080,2160);
 bioregionbin(curious)=1;
@@ -28,7 +27,7 @@ map = [0.2 0 .3
     0.8 0.7 0.3
     0.9 1 0
     0 0 0];
-colors = distinguishable_colors(21,{'w','k','b',[[0,0.266666666666667,0.105882352941176]]});
+colors = distinguishable_colors(21,{'w','k','b'});
 
 B=figure('units','normalized','outerposition',[0 0 1 1])
 B(1)=pcolor(lon_m,lat_m,bathybins); shading flat; hold on
@@ -40,7 +39,7 @@ hh.TickLabels=[-5000:1000:1000];
 hh.Label.String = 'Depth bin (value is upper bin limit)';
 hh.Label.Rotation = 90;
 
-xlim([-65,47]);
+xlim([-65,45]);
 ylim([-80,-50])
 title('Bathymetry bins')
 
@@ -83,7 +82,7 @@ pp.Ticks=[1.45:0.65:3];
 pp.TickLabels={'None', '0-200','>200'};
 pp.Label.String = 'Area-weighted productivity bins (mg m^-^2 day^-^1)';
 pp.Label.Rotation = 90;
-xlim([-65,47]);
+xlim([-65,45]);
 ylim([-80,-50])
 
 P(2)=plot(coast.long,coast.lat,'k'); hold on
@@ -179,7 +178,7 @@ rr.TickLabels={'None', '>5km Low PP','4-5km Low PP','3-4km Low PP','2-3km Low PP
     '>5km High PP','4-5km High PP','3-4km High PP','2-3km High PP','1-2km High PP','0-1km High PP','Land'};
 rr.Label.String = 'Bioregions';
 rr.Label.Rotation = 90;
-xlim([-65,47]);
+xlim([-65,45]);
 ylim([-80,-50])
 
 P(2)=plot(coast.long,coast.lat,'k'); hold on
@@ -195,7 +194,7 @@ end
 legend(P(3:end),float_names(gfixs))
 Pax=gca
 Pax.FontSize=14
-title('Bioregion bins and floats')    
+title('Bioregion bins')    
     
 %% m_map    
 LAT_MIN = -80; LAT_MAX = -50; LONG_MIN = -75; LONG_MAX = 40;
