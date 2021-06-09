@@ -72,7 +72,11 @@ print('-dpng',[plot_folder  'Distr_WGboxDepths' '.png'])
 temp.vgpm=vgpm_npp_all;
 temp.findneg=find(temp.vgpm<0);
 temp.vgpm(temp.findneg)=NaN;
-vgpm_av_day_nan=nanmean(temp.vgpm,3);
+vgpm_av_day_nan=nanmean(temp.vgpm,3); 
+        % this is the average daily rate across the whole timeseries. 
+        % Not the average of the daily rate per year 
+            %(which would mean averaging each pixel for the length of time was ice-free then averaging that across all the years...
+    % HOW DO THESE COMPARE
 
 %print('-dpng',[plot_folder  'Distr_NPPvBathy_WGbox' '.png'])
 
