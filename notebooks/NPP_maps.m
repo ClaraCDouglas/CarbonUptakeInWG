@@ -1,7 +1,7 @@
 %% NPP area-weighted rate 
 clearvars
 cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
-load('vgpm_imported.mat', 'vgpm_npp_all') % as from OceanProductivity site - average (A-W) daily rates per month
+load('vgpm_imported.mat', 'vgpm_npp_all', 'area_MODISVGPM_m2') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
 load('ProcessedData.mat', 'timedec')
 
 % Average NPP during ice free conditions
@@ -75,6 +75,7 @@ load('ProcessedData.mat', 'OceanProd')
 WG_annual_tot=OceanProd.vgpm.Weddell.NPP_tot_TgC_annual(2:18,2);
 WG_annual_tot=WG_annual_tot.*1e12 % back to g C
 
+    % make box
 IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
 findweddell=find(IN_and==1);
 region_sublist={'Weddell'};
@@ -86,7 +87,7 @@ for rix = 1:length(region_sublist)
     eval(['temp.',region_sublist{rix},'.box(',regionfindlist{rix},')=1;']);
     temp.(region_sublist{rix}).box_logic=logical(temp.(region_sublist{rix}).box);
 end
-
+    % calc contribution
 test4=NaN(size(NPP_years.vgpm_tot_years(:,:,:)));
 for yix=2003:2019
     test=NPP_years.vgpm_tot_years(:,:,yix-2002).*temp.Weddell.box_logic;
@@ -99,6 +100,27 @@ for yix=2003:2019
 end
 
 NPP.test5=nanmean(test4,3);
+
+% area-weighted annual NPP
+
+NPP.vgpm_tot_av_years_AW=NPP.vgpm_tot_av_years./area_MODISVGPM_m2;
+
+    % annual climatology of total NPP per year - Area Weighted
+temp.vgpmtot=VGPM_npp_tot_gC_nans;
+% vgpm_av_tot_nan=nanmean(temp.vgpmtot,3); % this has calculated the average total NPP in each pixel
+NPP_years.vgpm_tot_years_AW(:,:,length([2003:2019]))=NaN(size(temp.vgpmtot(:,:,1)));    
+for yix = 2003:2019
+    findyear=find(timedec>yix-0.5 & timedec<yix+0.5);
+    if size (findyear)<12
+    NPP_years.vgpm_tot_years_AW(:,:,yix-2002)=NaN(size(temp.vgpmtot(:,:,1)));
+    else
+    NPP_years.vgpm_tot_years_AW(:,:,yix-2002)=(nansum(temp.vgpmtot(:,:,findyear),3))./area_MODISVGPM_m2;    
+    end
+end
+
+NPP.vgpm_tot_av_years_AW2=nanmean(NPP_years.vgpm_tot_years_AW,3);
+NPP.vgpm_tot_av_years_AW2(find(NPP.vgpm_tot_av_years_AW2==0))=NaN;
+
 %% Maps
 % load the files needed maps
 load('box_lat_lons.mat', 'andrex_box')
@@ -134,6 +156,7 @@ else
     m_proj(Projection,'lon',[LONG_MIN LONG_MAX],'lat',[LAT_MIN LAT_MAX],'clo',-30); %For projs 13-18 -30
 end
 
+%% loop
 NPP_names=fieldnames(NPP);
 
 for zix=2:length(NPP_names)
@@ -277,6 +300,66 @@ legend('boxoff')
 
 print('-dpng',[plot_folder ['Map_TotNPP_Climatology' '.png']])
 
+%% climatology of annual total 
+zin=NPP.vgpm_tot_av_years_AW2;
+
+figure(8); clf; hold on
+
+m_pcolor(xin,yin,zin)
+shading interp
+set(0,'DefaultAxesColor','none')
+hh=colorbar;
+caxis([0 60]);
+colormap(flipud(hot))
+% colormap(ColourmapDelta_NPP)
+title('Climatology of Area-Weighted Total Annual NPP (g C m^-^2 a^-^1)')
+ylabel(hh,'g C','FontSize',12);
+
+%  hh.Location='southoutside'; % want to make it a bit shorter still
+% hh.Position = [0.25 0.13 0.4 0.05];
+% hh.Position = [0.47 0.15 0.4 0.05];
+%         pos2=[0.91 0.35 0.025 0.39]; % colorbar
+%         hh.Position=pos2;
+%         hh.Label.Rotation = 0;
+%         hh.Label.Position = [0.7 10.65 0.7];
+
+% plot 2000m isobath
+v=[-2000,-2000]; % this sets level at -2000m isobath
+m_tbase('contour',v,'edgecolor','k','linewidth',0.8);
+% just to get a black line for the legend:
+contour_blank=[0 1 2;0 1 2]
+contour_blank_draw=m_plot(contour_blank(1,:),contour_blank(2,:),'color','k','linewidth',0.8)
+% plot SB front
+sb_line=m_plot(sbdy(:,1),sbdy(:,2),'color',[.7 .7 .7],'linewi',1.5,'LineStyle','-')
+% plot region box and SR/OO line
+% graphical.shelfcolor=[0.9290 0.6940 0.1250];
+% graphical.opencolor=[0.6 0.4 0.8];
+
+% OO_line=m_plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',5)%,'LineStyle','--')
+% SR_line=m_plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',3.5)%'#80471C'
+
+SR_line=m_plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',5)%'#80471C'
+OO_line=m_plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',3.5)%,'LineStyle','--')
+
+m_coast('patch',[0.7 0.7 0.7]);
+m_grid('box','on','tickdir','in','xaxisLocation','top', 'fontsize',12);
+% caxis([0 500]);
+set(gca,'FontSize',12)
+
+get(0,'ScreenSize')
+% set(gcf,'color','none','position',[150 80 850 620])
+set(gcf,'color','white','position',[150 80 850 620])
+
+set(gca,'color','none')
+% title('Average Net Primary Production [MODIS VGPM] (2002 to 2020)')
+set(get(gca,'title'),'Position',[-0.0169,0.25,-5000000000000000])
+
+lgd_map=legend([contour_blank_draw sb_line SR_line OO_line],'2000m Isobath','Southern Boundary','Shelf Region','Open Ocean Region','Location',[0.5 0.17 0.4 0.05]);
+legend('boxoff')
+
+print('-dpng',[plot_folder ['Map_TotNPP_AW_Climatology' '.png']])
+
+
 %% climatology of annual daily average in ice-free conditions 
 zin=NPP.vgpm_annual_av_day_nan;
 
@@ -392,7 +475,7 @@ legend('boxoff')
 
 print('-dpng',[plot_folder ['Map_DailyNPP_AllYear_Climatology' '.png']])
 
-%% climatology of annual daily average in ice-free conditions
+%% proportional contribution of each pixel to total WG NPP
 zin=NPP.test5;
 
 figure(13); clf; hold on
