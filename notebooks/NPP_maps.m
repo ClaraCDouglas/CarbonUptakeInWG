@@ -1,8 +1,25 @@
-%% NPP area-weighted rate 
+%% load variables, make WG box
 clearvars
 cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 load('vgpm_imported.mat', 'vgpm_npp_all', 'area_MODISVGPM_m2') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
 load('ProcessedData.mat', 'timedec')
+load('latlon_m.mat')
+load('box_lat_lons.mat', 'andrex_box')
+    % make box
+IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
+findweddell=find(IN_and==1);
+region_sublist={'Weddell'};
+regionfindlist= {'findweddell'};
+for rix = 1:length(region_sublist)
+    %box,box logic
+    temp.(region_sublist{rix}).box = lat_m;
+    temp.(region_sublist{rix}).box(:) = 0;
+    eval(['temp.',region_sublist{rix},'.box(',regionfindlist{rix},')=1;']);
+    temp.(region_sublist{rix}).box_logic=logical(temp.(region_sublist{rix}).box);
+end
+
+%% NPP area-weighted rate 
 
 % Average NPP during ice free conditions
     % monthly climatology of average daily rates for whole monthly time series
@@ -23,6 +40,20 @@ for yix = 2003:2019
 end
 NPP.vgpm_annual_av_day_nan=nanmean(NPP_years.vgpm_annual_day_nan,3);
 
+    % mean and median rate in WG
+    box_day_nan=NPP.vgpm_annual_av_day_nan.*temp.Weddell.box_logic;
+    box_day_nan(box_day_nan==0)=NaN;
+    mean_day_nan=nanmean(nanmean(box_day_nan));
+    median_day_nan=median(median(box_day_nan,'omitnan'),'omitnan');
+figure
+histogram(box_day_nan);
+hold on
+xline(mean_day_nan,'Color','r','LineWidth',2);
+xline(median_day_nan,'Color','b','LineWidth',2);
+legend('Average growing season daily NPP','mean','median')
+
+
+
 % Average NPP over whole year
     % monthly climatology of average daily rates for whole monthly time series
 temp.vgpm_zeros=vgpm_npp_all;
@@ -41,6 +72,19 @@ for yix = 2003:2019
     end
 end
 NPP.vgpm_annual_av_day_zeros=nanmean(NPP_years.vgpm_annual_day_zeros,3);
+
+    % mean and median rate in WG
+    box_day_zeros=NPP.vgpm_annual_av_day_zeros.*temp.Weddell.box_logic;
+    box_day_zeros(box_day_zeros==0)=NaN;
+    mean_day_zeros=nanmean(nanmean(box_day_zeros));
+    median_day_zeros=median(median(box_day_zeros,'omitnan'),'omitnan');
+figure
+histogram(box_day_zeros);
+hold on
+xline(mean_day_zeros,'Color','r','LineWidth',2);
+xline(median_day_zeros,'Color','b','LineWidth',2);
+legend('Average 12 month daily NPP','mean','median')
+
 
 %% Total NPP 
 % VGPM_npp_tot_gC_all - land/permanent ice are set as zeros
@@ -70,23 +114,11 @@ NPP.vgpm_tot_av_years(find(NPP.vgpm_tot_av_years==0))=NaN;
 % NPP.vgpm_tot_monthclim=NPP.vgpm_tot_monthclim;
 % NPP.vgpm_tot_av_years=NPP.vgpm_tot_av_years;
 
-% Get proportion - contribution of each pixel to total WG NPP
+%% Get proportion - contribution of each pixel to total WG NPP
 load('ProcessedData.mat', 'OceanProd')
 WG_annual_tot=OceanProd.vgpm.Weddell.NPP_tot_TgC_annual(2:18,2);
 WG_annual_tot=WG_annual_tot.*1e12 % back to g C
 
-    % make box
-IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
-findweddell=find(IN_and==1);
-region_sublist={'Weddell'};
-regionfindlist= {'findweddell'};
-for rix = 1:length(region_sublist)
-    %box,box logic
-    temp.(region_sublist{rix}).box = lat_m;
-    temp.(region_sublist{rix}).box(:) = 0;
-    eval(['temp.',region_sublist{rix},'.box(',regionfindlist{rix},')=1;']);
-    temp.(region_sublist{rix}).box_logic=logical(temp.(region_sublist{rix}).box);
-end
     % calc contribution
 test4=NaN(size(NPP_years.vgpm_tot_years(:,:,:)));
 for yix=2003:2019
@@ -101,7 +133,7 @@ end
 
 NPP.test5=nanmean(test4,3);
 
-% area-weighted annual NPP
+%% area-weighted annual NPP
 
 NPP.vgpm_tot_av_years_AW=NPP.vgpm_tot_av_years./area_MODISVGPM_m2;
 
@@ -300,8 +332,8 @@ legend('boxoff')
 
 print('-dpng',[plot_folder ['Map_TotNPP_Climatology' '.png']])
 
-%% climatology of annual total 
-zin=NPP.vgpm_tot_av_years_AW2;
+%% climatology of annual total area weighted
+zin=NPP.vgpm_tot_av_years_AW2.*1000;
 
 figure(8); clf; hold on
 
@@ -309,11 +341,11 @@ m_pcolor(xin,yin,zin)
 shading interp
 set(0,'DefaultAxesColor','none')
 hh=colorbar;
-caxis([0 60]);
-colormap(flipud(hot))
-% colormap(ColourmapDelta_NPP)
-title('Climatology of Area-Weighted Total Annual NPP (g C m^-^2 a^-^1)')
-ylabel(hh,'g C','FontSize',12);
+caxis([0 55000]);
+% colormap(flipud(hot))
+colormap(ColourmapDelta_NPP)
+title('Climatology of Area-Weighted Total Annual NPP (mgC m^-^2 a^-^1)')
+ylabel(hh,'mgC m^-^2 a^-^1','FontSize',12);
 
 %  hh.Location='southoutside'; % want to make it a bit shorter still
 % hh.Position = [0.25 0.13 0.4 0.05];
