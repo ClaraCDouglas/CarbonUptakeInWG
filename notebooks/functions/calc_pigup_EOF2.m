@@ -56,7 +56,7 @@ for i = 1:1:r2d
 end
 
 % see if there's any trends in this data
-trends = reshape(slopes,r3d,c3d); % doesn't work if some cells are removed because of NaNs - changes the size of the array?
+trends = []%reshape(slopes,r3d,c3d); % doesn't work if some cells are removed because of NaNs - changes the size of the array?
 
 % right now the difficult bit
 % first a singular value decompsition of our data (this is as described in

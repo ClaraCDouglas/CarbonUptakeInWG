@@ -234,17 +234,248 @@ time=time;
 
 
 
+%% smaller than whole WG, larger than MR box
+% keeping data outwith the WG box, because they might be part of the patterns
+
+% 12.5W
+NPP_years.vgpm_annual_day_nan_east=NPP_years.vgpm_annual_day_nan(861:1012,1005:1279,:);
+
+[ev_index,tda,pev,trends] = calc_pigup_EOF2(NPP_years.vgpm_annual_day_nan_east,time)
+
+    lat_m_E=lat_m(861:1012,1005:1279);
+    lon_m_E=lon_m(861:1012,1005:1279);
+    figure;
+    pcolor(lon_m_E,lat_m_E,NPP_years.vgpm_annual_day_nan_east(:,:,1)); shading flat
+
+    % plot EOF output
+figure('units','normalized','outerposition',[0 0 1 1])
+subplot(2,2,1);
+plot(pev,'Color',[0,0.2,0.4],'LineWidth',2);
+ylabel('PEV');
+xlabel('Mode Number')
+title('Percentage Explained Variance','fontsize',14);
+subplot(2,2,2);
+plot(tda(:,1),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 1 Time Dependent Amplidtude','fontsize',14);
+subplot(2,2,[3]);
+pcolor(lon_m_E,lat_m_E,ev_index(:,:,1)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 1 Pattern','fontsize',14);
+sgt = sgtitle('VGPM growing season average NPP east WG SVD EOF','FontWeight','bold');
+sgt.FontSize = 18;
+
+
+figure;
+plot(pev,'Color',[0,0.2,0.4],'LineWidth',2);
+ylabel('PEV');
+xlabel('Mode Number')
+title('Percentage Explained Variance','fontsize',14);
+
+figure('units','normalized','outerposition',[0 0 1 1])
+subplot(2,4,1);
+plot(tda(:,1),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 1 Time Dependent Amplidtude','fontsize',14);
+subplot(2,4,2);
+plot(tda(:,2),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 2 TDA','fontsize',14);
+subplot(2,4,3);
+plot(tda(:,3),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 3 TDA','fontsize',14);
+subplot(2,4,4);
+plot(tda(:,4),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 4 TDA','fontsize',14);
+
+subplot(2,4,5);
+pcolor(lon_m_E,lat_m_E,ev_index(:,:,1)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 1 Pattern','fontsize',14);
+subplot(2,4,6);
+pcolor(lon_m_E,lat_m_E,ev_index(:,:,2)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 2 Pattern','fontsize',14);
+subplot(2,4,7);
+pcolor(lon_m_E,lat_m_E,ev_index(:,:,3)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 3 Pattern','fontsize',14);
+subplot(2,4,8);
+pcolor(lon_m_E,lat_m_E,ev_index(:,:,4)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 4 Pattern','fontsize',14);
 
 
 
+NPP_years.vgpm_annual_day_nan_weast=NPP_years.vgpm_annual_day_nan(861:1012,930:1279,:);
+
+[ev_index,tda,pev,trends] = calc_pigup_EOF2(NPP_years.vgpm_annual_day_nan_weast,time)
+
+    lat_m_Ew=lat_m(861:1012,930:1279);
+    lon_m_Ew=lon_m(861:1012,930:1279);
+    figure;
+    pcolor(lon_m_Ew,lat_m_Ew,NPP_years.vgpm_annual_day_nan_weast(:,:,1)); shading flat
+
+    % plot EOF output
+figure('units','normalized','outerposition',[0 0 1 1])
+subplot(2,2,1);
+plot(pev,'Color',[0,0.2,0.4],'LineWidth',2);
+ylabel('PEV');
+xlabel('Mode Number')
+title('Percentage Explained Variance','fontsize',14);
+subplot(2,2,2);
+plot(tda(:,1),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 1 Time Dependent Amplidtude','fontsize',14);
+subplot(2,2,[3]);
+pcolor(lon_m_Ew,lat_m_Ew,ev_index(:,:,1)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 1 Pattern','fontsize',14);
+sgt = sgtitle('VGPM growing season average NPP more east WG SVD EOF','FontWeight','bold');
+sgt.FontSize = 18;
 
 
 
+NPP_years.vgpm_annual_day_nan_mweast=NPP_years.vgpm_annual_day_nan(861:1012,770:1279,:); % too big %850:1279 also too big
+
+[ev_index,tda,pev,trends] = calc_pigup_EOF2(NPP_years.vgpm_annual_day_nan_mweast,time) % too big
 
 
+NPP_years.vgpm_annual_day_nan_mweast=NPP_years.vgpm_annual_day_nan(861:1012,880:1279,:); 
+
+[ev_index,tda,pev,trends] = calc_pigup_EOF2(NPP_years.vgpm_annual_day_nan_mweast,time) 
+    lat_m_Ew=lat_m(861:1012,880:1279);
+    lon_m_Ew=lon_m(861:1012,880:1279);
+    figure;
+    pcolor(lon_m_Ew,lat_m_Ew,NPP_years.vgpm_annual_day_nan_mweast(:,:,1)); shading flat
+
+    % plot EOF output
+figure('units','normalized','outerposition',[0 0 1 1])
+subplot(2,2,1);
+plot(pev,'Color',[0,0.2,0.4],'LineWidth',2);
+ylabel('PEV');
+xlabel('Mode Number')
+title('Percentage Explained Variance','fontsize',14);
+subplot(2,2,2);
+plot(tda(:,1),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 1 Time Dependent Amplidtude','fontsize',14);
+subplot(2,2,[3]);
+pcolor(lon_m_Ew,lat_m_Ew,ev_index(:,:,1)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 1 Pattern','fontsize',14);
+sgt = sgtitle('VGPM growing season average NPP more east WG SVD EOF','FontWeight','bold');
+sgt.FontSize = 18;
 
 
+figure;
+plot(pev,'Color',[0,0.2,0.4],'LineWidth',2);
+ylabel('PEV');
+xlabel('Mode Number')
+title('Percentage Explained Variance','fontsize',14);
 
+figure('units','normalized','outerposition',[0 0 1 1])
+subplot(2,4,1);
+plot(tda(:,1),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 1 Time Dependent Amplidtude','fontsize',14);
+subplot(2,4,2);
+plot(tda(:,2),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 2 TDA','fontsize',14);
+subplot(2,4,3);
+plot(tda(:,3),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 3 TDA','fontsize',14);
+subplot(2,4,4);
+plot(tda(:,4),'r','LineWidth',2);ylabel('PEV');
+ylabel('TDA');
+xlabel('Year #')
+title('Mode 4 TDA','fontsize',14);
+
+subplot(2,4,5);
+pcolor(lon_m_Ew,lat_m_Ew,ev_index(:,:,1)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 1 Pattern','fontsize',14);
+subplot(2,4,6);
+pcolor(lon_m_Ew,lat_m_Ew,ev_index(:,:,2)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 2 Pattern','fontsize',14);
+subplot(2,4,7);
+pcolor(lon_m_Ew,lat_m_Ew,ev_index(:,:,3)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 3 Pattern','fontsize',14);
+subplot(2,4,8);
+pcolor(lon_m_Ew,lat_m_Ew,ev_index(:,:,4)); 
+shading flat
+hold on 
+plot(3,-66,'w*')
+colorbar
+colormap(jet);
+geoshow('landareas.shp','facecolor','k')
+title('Mode 4 Pattern','fontsize',14);
 
 
 
