@@ -1,6 +1,6 @@
 %% load variables, make WG box
 clearvars
-cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+% cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
 cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 load('vgpm_imported.mat', 'vgpm_npp_all', 'area_MODISVGPM_m2') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
 load('ProcessedData.mat', 'timedec')
@@ -20,12 +20,11 @@ for rix = 1:length(region_sublist)
 end
 
 %% NPP area-weighted rate 
-
-% Average NPP during ice free conditions
-    % monthly climatology of average daily rates for whole monthly time series
 temp.vgpm=vgpm_npp_all;
 temp.findneg=find(temp.vgpm<0);
 temp.vgpm(temp.findneg)=NaN;
+% Average NPP during ice free conditions
+    % monthly climatology of average daily rates for whole monthly time series
 NPP.vgpm_av_day_nan=nanmean(temp.vgpm,3); 
 
     % annual climatology of average daily rates per year
