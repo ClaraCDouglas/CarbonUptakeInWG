@@ -1,7 +1,7 @@
 %% load variables, make WG box
 clearvars
-% cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
-cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+% cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 load('vgpm_imported.mat', 'vgpm_npp_all', 'area_MODISVGPM_m2') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
 load('ProcessedData.mat', 'timedec')
 load('latlon_m.mat')

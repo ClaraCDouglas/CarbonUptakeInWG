@@ -107,10 +107,10 @@ NPP_years.vgpm_annual_day_nan_BOX(NPP_years.vgpm_annual_day_nan_BOX==0)=NaN;
 
 % cut down to box around WG box
 
-NPP_years.vgpm_annual_day_nan_BOX=NPP_years.vgpm_annual_day_nan_BOX(861:1012,708:1279,:);
+NPP_years.vgpm_annual_day_nan_BOX=NPP_years.vgpm_annual_day_nan(861:1012,708:1279,:);
 % to check region:
-    % lat_m_box=lat_m(861:1012,708:1279);
-    % lon_m_box=lon_m(861:1012,708:1279);
+     lat_m_box=lat_m(861:1012,708:1279);
+     lon_m_box=lon_m(861:1012,708:1279);
     % figure;
     % pcolor(lon_m_box,lat_m_box,NPP_years.vgpm_annual_day_nan_BOX(:,:,1)); shading flat
 
@@ -127,6 +127,21 @@ time=time';
 
 MR_box=NPP_years.vgpm_annual_day_nan_BOX(62:83,372:404,:);
 [ev_index,tda,pev,trends] = calc_pigup_EOF2(MR_box,time)
+
+% corr map
+r_map = calc_EOF_corr_map(MR_box,ev_index,tda,17)
+    lat_m_MR=lat_m_box(62:83,372:404);
+    lon_m_MR=lon_m_box(62:83,372:404);
+    figure;
+    pcolor(lon_m_MR,lat_m_MR,r_map(:,:,1)); shading flat
+r_map_perc=r_map.*r_map;    
+r_map_perc=r_map_perc*100;
+    figure;
+    pcolor(lon_m_MR,lat_m_MR,r_map_perc(:,:,1)); shading flat
+% testing function line by line
+    % variables needed
+        index3d=MR_box; eof3d=ev_index; tda=tda;, no_mod=17;
+
 % to check region:
     lat_m_MR=lat_m_box(62:83,372:404);
     lon_m_MR=lon_m_box(62:83,372:404);
