@@ -8,7 +8,6 @@ Carbon Uptake In the Weddell Gyre
 Calculating biological carbon uptake in the Weddell Gyre using satellite estimates of NPP. Assessing importance and drivers of NPP in open ocean. Comparing satellite estimates to data from bio-Argo floats.
 testing 
 
-Testing remote computer connection
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://github.com/jbusecke/cookiecutter-science-project">cookiecutter science project template</a>.</small></p>
