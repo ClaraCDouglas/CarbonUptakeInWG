@@ -1,7 +1,13 @@
 %% load variables, make WG box
 clearvars
-cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
-% cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+desktop = 1; 
+if desktop
+    addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
+    cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+    addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Matlab Add-ins'));
+else
+    cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+end
 load('vgpm_imported.mat', 'vgpm_npp_all', 'area_MODISVGPM_m2') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
 load('ProcessedData.mat', 'timedec')
 load('latlon_m.mat')
