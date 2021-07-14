@@ -77,6 +77,10 @@ target/
 
 # exclude data from source control by default
 data/processed/*imported.mat
+
+#exclude matlab addins folder
+MatlabAddins/
+
 # I want to be able to handle links in here...need to exclude certain file types
 # instead
 

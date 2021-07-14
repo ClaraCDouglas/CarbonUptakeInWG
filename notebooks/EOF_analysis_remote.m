@@ -1,9 +1,10 @@
 %% EOF analysis
-% process data to only have within WG box
+% calc anomalies
 % NPP_years.anom_annual_day_nan = NPP_years.vgpm_annual_day_nan - NPP.vgpm_annual_av_day_nan;
-
-NPP_years.(algorithm{aix}).annual_day_nan_BOX=NPP_years.(algorithm{aix}).annual_day_nan.*temp.Weddell.box_logic;
-NPP_years.(algorithm{aix}).annual_day_nan_BOX(NPP_years.(algorithm{aix}).annual_day_nan_BOX==0)=NaN;
+algorithm=1;
+% process data to only have within WG box
+% NPP_years.(algorithm{aix}).annual_day_nan_BOX=NPP_years.(algorithm{aix}).annual_day_nan.*temp.Weddell.box_logic;
+% NPP_years.(algorithm{aix}).annual_day_nan_BOX(NPP_years.(algorithm{aix}).annual_day_nan_BOX==0)=NaN;
 
 % cut down to box around WG box without setting outside as 0
 NPP_years.(algorithm{aix}).annual_day_nan_BOX=NPP_years.vgpm_annual_day_nan(850:1050,690:1300,:);
@@ -107,12 +108,5 @@ colorbar
 colormap(jet);
 geoshow('landareas.shp','facecolor','k')
 title('Mode 1 Pattern','fontsize',14);
-
-
-
-
-
-
-
 
 

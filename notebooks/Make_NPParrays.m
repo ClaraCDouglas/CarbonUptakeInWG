@@ -1,17 +1,22 @@
 clearvars
-desktop = 1; 
+desktop =0; 
+laptop =0;
+remote=1;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Matlab Add-ins'));
-else
+elseif laptop
     cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+elseif remote
+    addpath(genpath('/noc/users/ccd1n18/Documents/Projects/CarbonUptakeInWG'))
+    cd '/noc/users/ccd1n18/Documents/Projects/CarbonUptakeInWG/data/processed' % desktop
 end
-load('vgpm_imported.mat', 'vgpm_npp_all') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
-load('cafe_imported.mat', 'cafe_npp_all') % cafe_npp_all as from OceanProductivity site - average (A-W) daily rates per month
-load('cbpm_imported.mat', 'cbpm_npp_all') % cbpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
-load('eppley_imported.mat', 'eppley_npp_all') % eppley_npp_all as from OceanProductivity site - average (A-W) daily rates per month
-load('vgpm_imported.mat', 'time_start_all')
+load('vgpm_npp_all.mat') % vgpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
+load('cafe_npp_all.mat') % cafe_npp_all as from OceanProductivity site - average (A-W) daily rates per month
+load('cbpm_npp_all.mat') % cbpm_npp_all as from OceanProductivity site - average (A-W) daily rates per month
+load('eppley_npp_all.mat') % eppley_npp_all as from OceanProductivity site - average (A-W) daily rates per month
+load('time_start_all.mat')
 load('ProcessedData.mat', 'timedec')
 
 algorithm={'cafe','cbpm','eppley','vgpm'};
