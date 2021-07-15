@@ -28,29 +28,28 @@ clearvars cafe_npp_all cbpm_npp_all eppley_npp_all vgpm_npp_all
 
 %% NPP area-weighted rate 
 for aix = 1:length(algorithm)
-    temp.findneg=find(temp.(algorithm{aix})<0);
-    temp.(algorithm{aix})(temp.findneg)=NaN;
+    temp.findneg=find(temp.(algorithm{aix}).rates<0);
+    temp.(algorithm{aix}).rates(temp.findneg)=NaN;
     % annual climatology of average daily rates per year
-    NPP.(algorithm{aix}).annual_day_nan(:,:,length([2003:2019]))=NaN(size(temp.(algorithm{aix})(:,:,1)));
+    NPP.(algorithm{aix}).annual_day_nan(:,:,length([2003:2019]))=NaN(size(temp.(algorithm{aix}).rates(:,:,1)));
     for yix = 2003:2019
         findyear=find(timedec>yix-0.5 & timedec<yix+0.5);
         if size (findyear)<12
-            NPP_years.(algorithm{aix}).annual_day_nan(:,:,yix-2002)=NaN(size(temp.(algorithm{aix})(:,:,1)));
+            NPP_years.(algorithm{aix}).annual_day_nan(:,:,yix-2002)=NaN(size(temp.(algorithm{aix}).rates(:,:,1)));
         else
-            NPP_years.(algorithm{aix}).annual_day_nan(:,:,yix-2002)=nanmean(temp.(algorithm{aix})(:,:,findyear),3);
+            NPP_years.(algorithm{aix}).annual_day_nan(:,:,yix-2002)=nanmean(temp.(algorithm{aix}).rates(:,:,findyear),3);
         end
     end
     NPP.(algorithm{aix}).annual_av_day_nan=nanmean(NPP_years.(algorithm{aix}).annual_day_nan,3);
-    
-end
 temp = rmfield(temp, 'findneg');
+end
 %% Januarys/monthly rates
 
 % January maps
 for aix = 1:length(algorithm)
     for mix = 1%:12
         findmonth=find(time_start_all(:,2)==mix);
-        NPP_years.(algorithm{aix}).jan_rates=temp.(algorithm{aix})(:,:,findmonth);
+        NPP_years.(algorithm{aix}).jan_rates=temp.(algorithm{aix}).rates(:,:,findmonth);
     end
 end
 clearvars findmonth

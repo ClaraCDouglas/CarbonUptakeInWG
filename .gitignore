@@ -77,6 +77,7 @@ target/
 
 # exclude data from source control by default
 data/processed/*imported.mat
+data/processed/*all.mat
 
 #exclude matlab addins folder
 MatlabAddins/
