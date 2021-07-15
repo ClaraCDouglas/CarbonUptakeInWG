@@ -34,7 +34,7 @@ years=years';
 
 time=1:length(2003:2020);
 time=time';
-[EOF.(algorithm{aix}).JAN_ev_index,EOF.(algorithm{aix}).JAN_tda,EOF.(algorithm{aix}).JAN_pev,EOF.(algorithm{aix}).trends] = calc_pigup_EOF2(NPP_years.(algorithm{aix}).annual_day_nan_box,time)
+[EOF.(algorithm{aix}).JAN_ev_index,EOF.(algorithm{aix}).JAN_tda,EOF.(algorithm{aix}).JAN_pev,EOF.(algorithm{aix}).trends] = calc_pigup_EOF2(NPP_years.(algorithm{aix}).jan_rates_box,time)
 
 end
 
@@ -64,36 +64,45 @@ title('Mode 1 Pattern','fontsize',14);
 sgt = sgtitle('VGPM growing season average NPP WG SVD EOF','FontWeight','bold');
 sgt.FontSize = 18;
 
+
+plot_folder=['/noc/users/ccd1n18/Documents/Projects/CarbonUptakeInWG/figures'];
+
+
+
+for aix = 4%1:length(algorithm)
 figure;
-plot(pev,'Color',[0,0.2,0.4],'LineWidth',2);
+plot(EOF.(algorithm{aix}).pev,'Color',[0,0.2,0.4],'LineWidth',2);
 ylabel('PEV');
 xlabel('Mode Number')
-title('CAFE: Percentage Explained Variance','fontsize',14);
+title(['Percentage Explained Variance: ' ,(algorithm{aix}),'']);
+
+%print('-dpng',[plot_folder ['PEV_',(algorithm(aix)), '.png']])
+
 
 figure('units','normalized','outerposition',[0 0 1 1])
 subplot(2,4,1);
-plot(tda(:,1),'r','LineWidth',2);ylabel('PEV');
+plot(EOF.(algorithm{aix}).tda(:,1),'r','LineWidth',2);ylabel('PEV');
 hold on
 yline(0)
 ylabel('TDA');
 xlabel('Year #')
 title('Mode 1 Time Dependent Amplidtude','fontsize',14);
 subplot(2,4,2);
-plot(tda(:,2),'r','LineWidth',2);ylabel('PEV');
+plot(EOF.(algorithm{aix}).tda(:,2),'r','LineWidth',2);ylabel('PEV');
 hold on
 yline(0)
 ylabel('TDA');
 xlabel('Year #')
 title('Mode 2 TDA','fontsize',14);
 subplot(2,4,3);
-plot(tda(:,3),'r','LineWidth',2);ylabel('PEV');
+plot(EOF.(algorithm{aix}).tda(:,3),'r','LineWidth',2);ylabel('PEV');
 hold on
 yline(0)
 ylabel('TDA');
 xlabel('Year #')
 title('Mode 3 TDA','fontsize',14);
 subplot(2,4,4);
-plot(tda(:,4),'r','LineWidth',2);ylabel('PEV');
+plot(EOF.(algorithm{aix}).tda(:,4),'r','LineWidth',2);ylabel('PEV');
 hold on
 yline(0)
 ylabel('TDA');
@@ -101,7 +110,7 @@ xlabel('Year #')
 title('Mode 4 TDA','fontsize',14);
 
 subplot(2,4,5);
-pcolor(lon_m_box,lat_m_box,ev_index(:,:,1)); 
+pcolor(lon_m_box,lat_m_box,EOF.(algorithm{aix}).ev_index(:,:,1)); 
 shading flat
 hold on 
 plot(3,-66,'k*')
@@ -110,7 +119,7 @@ colormap(jet);
 geoshow('landareas.shp','facecolor','k')
 title('Mode 1 Pattern','fontsize',14);
 subplot(2,4,6);
-pcolor(lon_m_box,lat_m_box,ev_index(:,:,2)); 
+pcolor(lon_m_box,lat_m_box,EOF.(algorithm{aix}).ev_index(:,:,2)); 
 shading flat
 hold on 
 plot(3,-66,'k*')
@@ -119,7 +128,7 @@ colormap(jet);
 geoshow('landareas.shp','facecolor','k')
 title('Mode 2 Pattern','fontsize',14);
 subplot(2,4,7);
-pcolor(lon_m_box,lat_m_box,ev_index(:,:,3)); 
+pcolor(lon_m_box,lat_m_box,EOF.(algorithm{aix}).ev_index(:,:,3)); 
 shading flat
 hold on 
 plot(3,-66,'k*')
@@ -128,7 +137,7 @@ colormap(jet);
 geoshow('landareas.shp','facecolor','k')
 title('Mode 3 Pattern','fontsize',14);
 subplot(2,4,8);
-pcolor(lon_m_box,lat_m_box,ev_index(:,:,4)); 
+pcolor(lon_m_box,lat_m_box,EOF.(algorithm{aix}).ev_index(:,:,4)); 
 shading flat
 hold on 
 plot(3,-66,'k*')
@@ -136,5 +145,7 @@ colorbar
 colormap(jet);
 geoshow('landareas.shp','facecolor','k')
 title('Mode 4 Pattern','fontsize',14);
-suptitle('CAFE')
+suptitle(['' ,(algorithm{aix}), ''])
+%print('-jpeg',[plot_folder ['TDA_patterns_',num2str(algorithm(aix)), '.jpg']])
 
+end
