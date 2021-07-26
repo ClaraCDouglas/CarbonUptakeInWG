@@ -169,14 +169,22 @@ figure;
 pcolor(lon_m,lat_m,growing_season(:,:,1)); shading flat
 cm = get(gca,'Colormap');
 
-
+plot_folder=['C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\figures\'];
+load('openshelf_coord.mat')
 for yix = 2003:2019
-figure(yix-2002);
+figure('units','normalized','outerposition',[0 0 1 1])
 pcolor(lon_m,lat_m,growing_season(:,:,yix-2002)); shading flat
 colormap(cm)
 colorbar
 geoshow('landareas.shp','facecolor','k')
 title(num2str(yix))
+xlim([-65,47]);
+ylim([-80,-50])
+hold on
+SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+print('-dpng',[plot_folder ['IceFreeMonths',num2str(yix), '.png']])
+close
 end
 
 for ix = 1:12
@@ -190,21 +198,94 @@ end
 
 % Only including months where there is full coverage
 for yix = 2003:2019
-    findyear=find(timedec>yix-0.5 & timedec<yix+0.5);
-    findmonths=find(time_start_all(:,2)>=4 &  time_start_all(:,2)<=8);
+    findyear=find(timedec>yix-0.3 & timedec<yix+0.25); % removes April-August (partial/no coverage)
     
     ice_covered(:,:,yix-2002)=nansum(icecover(:,:,findyear),3);
-    growing_season(:,:,yix-2002)=12.-ice_covered(:,:,yix-2002);
+    growing_season(:,:,yix-2002)=7.-ice_covered(:,:,yix-2002);
 end
 
 growing_season(growing_season==0)=NaN;
+
+figure;
+pcolor(lon_m,lat_m,growing_season(:,:,1)); shading flat
+% cm = get(gca,'Colormap');
+for yix = 2003:2019
+figure(yix-2002);
+pcolor(lon_m,lat_m,growing_season(:,:,yix-2002)); shading flat
+colormap(cm)
+colorbar
+geoshow('landareas.shp','facecolor','k')
+title(num2str(yix))
+end
 
 for rix = 1:length(region_sublist)
     for yix = 2003:2019
         yolo=growing_season(:,:,yix-2002);
         temp.(region_sublist{rix}).growseason(yix-2002,1)=nanmean(nanmean(yolo(temp.(region_sublist{rix}).box_logic)));
-%         temp.(region_sublist{rix}).growseason(yix-2002,1)=nanmean(nanmean(growing_season(:,:,yix-2002).*(temp.(region_sublist{rix}).box)));
+        temp.(region_sublist{rix}).growseason_med(yix-2002,1)=median(median(yolo(temp.(region_sublist{rix}).box_logic),'omitnan'),'omitnan');
+
+        temp.(region_sublist{rix}).growseason_meanstd(yix-2002,1)=std(yolo(temp.(region_sublist{rix}).box_logic),'omitnan');
     end
+end
+x=2003:2019;
+figure;
+bar(x,[temp.Shelf.growseason_med temp.Open.growseason_med])
+legend('Shelf','Open')
+title('Median number of months that are considered ice-free ')
+ylim([0 5])
+
+figure;
+p1=plot(x,temp.Shelf.growseason,'LineWidth',1.5,'Color',[0.8 0.4 0])%,'LineStyle','--')
+hold on
+% plot(x,temp.Shelf.growseason_med,'LineWidth',2,'Color',[0.7 0.3 0.1])
+% hold on
+p2=plot(x,temp.Open.growseason,'LineWidth',1.5,'Color',[0.6 0.2 0.8])%,'LineStyle','--')
+% plot(x,temp.Open.growseason_med,'LineWidth',1.8,'Color',[0.5 0.1 0.7])
+
+p3=plot(x,(temp.Shelf.growseason+temp.Shelf.growseason_meanstd),'LineWidth',1,'Color',[0.6 0.2 0],'LineStyle','--')
+p4=plot(x,(temp.Shelf.growseason-temp.Shelf.growseason_meanstd),'LineWidth',1,'Color',[0.6 0.2 0],'LineStyle','--')
+
+p5=plot(x,(temp.Open.growseason+temp.Open.growseason_meanstd),'LineWidth',1,'Color',[0.7 0.4 0.8],'LineStyle','--')
+p6=plot(x,(temp.Open.growseason-temp.Open.growseason_meanstd),'LineWidth',1,'Color',[0.7 0.4 0.8],'LineStyle','--')
+
+title('Number of months that are considered ice-free')
+% legend('Shelf Mean','Shelf Median','Open Ocean Mean','Open Ocean Median','Shelf STD','Shelf STD','Open STD','Open STD')
+legend([p1 p2 p3 p5],'Shelf Mean','Open Ocean Mean','Shelf STD','Open STD')
+ylim([0 7])
+ylabel('Months Ice-Free')
+xlabel('Year')
+
+
+% boxplot...
+for rix = 1:length(region_sublist)
+    for yix = 2003:2019
+        yolo=growing_season(:,:,yix-2002);
+        temp.(region_sublist{rix}).growseason_map(:,:,yix-2002)=yolo(temp.(region_sublist{rix}).box_logic);
+    end
+%     temp.(region_sublist{rix}).growseason_map(isnan(temp.(region_sublist{rix}).growseason_map))=0;
+    temp.(region_sublist{rix}).growseason_map(temp.(region_sublist{rix}).growseason_map==0)=NaN;
+
 end
 
 
+figure;
+boxplot([temp.Shelf.growseason_map(:,:,1) temp.Shelf.growseason_map(:,:,2) temp.Shelf.growseason_map(:,:,6)])
+
+test=reshape(temp.Shelf.growseason_map,[9317,17]);
+test2=reshape(temp.Open.growseason_map,[35282,17]);
+figure;
+subplot(1,2,1)
+boxplot(test,x)
+ylabel('Months ice-free')
+title('Shelf Region')
+
+subplot(1,2,2)
+boxplot(test2,x)
+ylabel('Months ice-free')
+title('Open Ocean')
+
+sgtitle('Number of months that are ice-free between September-March')
+
+
+figure;
+boxplot([temp.Open.growseason_map(:,:,1) temp.Open.growseason_map(:,:,8) temp.Open.growseason_map(:,:,14)])
