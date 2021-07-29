@@ -21,8 +21,30 @@ algorithm={'cafe','cbpm','eppley','vgpm'};
 % temp.vgpm.rates=vgpm_npp_all;
 % clearvars cafe_npp_all cbpm_npp_all eppley_npp_all vgpm_npp_all
 
+%% box logic
+%
+load('latlon_m.mat')
+load('openshelf_coord.mat')
+load('box_lat_lons.mat', 'andrex_box')
+IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
+findweddell=find(IN_and==1);
+IN_shelf=inpolygon(lon_m,lat_m,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
+findshelf=find(IN_shelf==1);
+IN_open=inpolygon(lon_m,lat_m,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
+findopen=find(IN_open==1);
 
-%% playing around
+region_sublist={'Weddell','Shelf','Open'};
+regionfindlist= {'findweddell','findshelf','findopen'};
+
+for rix = 1:length(region_sublist)
+    %box,box logic
+    temp.(region_sublist{rix}).box = lat_m;
+    temp.(region_sublist{rix}).box(:) = 0;
+    eval(['temp.',region_sublist{rix},'.box(',regionfindlist{rix},')=1;']);
+    temp.(region_sublist{rix}).box_logic=logical(temp.(region_sublist{rix}).box);
+end
+
+%% accounting for the area of regions
 for aix = 4%1:length(algorithm)
     for rix = 1:length(region_sublist)
         temp.(region_sublist{rix}).monthly_AW_rate_gmpermonth=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC./OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2;
@@ -80,13 +102,16 @@ title('Annual Total NPP')
 xlabel('Year')
 ylabel('NPP (Tg C a^-^1)')
 
-
+% annual average area weighted NPP
 for aix = 4%1:length(algorithm)
     for rix = 1:length(region_sublist)
         temp.(region_sublist{rix}).av_ann_tot=nanmean(OceanProd.vgpm.(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2));
     end
 end
 
+% stats - are the annual area-weighted rates on the shelf different to
+% those in the open ocean? 
+    % (null hypothesis is that they are not different)
 [p,tbl]=anova1(y)
 years=x;
 shelfvopen=y;
@@ -107,35 +132,40 @@ boxplot(y);
 [h,p,ci,stats] = ttest2(y(:,1),y(:,2))
 [h,p,ci,stats] = ttest2(y2(:,1),y2(:,2))
 
-%% box logic
-%
-load('latlon_m.mat')
-load('openshelf_coord.mat')
-load('box_lat_lons.mat', 'andrex_box')
-IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
-findweddell=find(IN_and==1);
-IN_shelf=inpolygon(lon_m,lat_m,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
-findshelf=find(IN_shelf==1);
-IN_open=inpolygon(lon_m,lat_m,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
-findopen=find(IN_open==1);
+% regression and correlation between annual mean area of ice-free water vs A-W NPP
+% run some in AnalyseData.m
 
-region_sublist={'Weddell','Shelf','Open'};
-regionfindlist= {'findweddell','findshelf','findopen'};
+lm_AW_Shelf=fitlm(regres.tblAW.(region_sublist{2}),'NPP_AW~icefree')
+lm_AW_Open=fitlm(regres.tblAW.(region_sublist{3}),'NPP_AW~icefree')
+lmsmall_AW_Shelf=fitlm(regres.tblAWsmall.(region_sublist{2}),'NPP_AW~icefree')
+lmsmall_AW_Open=fitlm(regres.tblAWsmall.(region_sublist{3}),'NPP_AW~icefree')
 
-for rix = 1:length(region_sublist)
-    %box,box logic
-    temp.(region_sublist{rix}).box = lat_m;
-    temp.(region_sublist{rix}).box(:) = 0;
-    eval(['temp.',region_sublist{rix},'.box(',regionfindlist{rix},')=1;']);
-    temp.(region_sublist{rix}).box_logic=logical(temp.(region_sublist{rix}).box);
-end
+[rhow,pw]=corr(regres.NPP_AW.(region_sublist{1}),regres.ice.(region_sublist{1}),'Type','Pearson')
+[rhoo,po]=corr(regres.NPP_AW.(region_sublist{3}),regres.ice.(region_sublist{3}),'Type','Pearson')
+[rhos,ps]=corr(regres.NPP_AW.(region_sublist{2}),regres.ice.(region_sublist{2}),'Type','Pearson')
+
+figure; 
+subplot(2,1,1)
+plot(lmsmall_AW_Shelf); title('Shelf')
+txtS = {'y=0.59x+40.726','rho=0.2172','p=0.402'};
+text(2.4,54,txtS)
+xlabel('Annual mean area of ice-free water (km^2 x10^4)','Interpreter','tex')
+ylabel('Area-weighted NPP (g C m^-^2 a^-^1)','Interpreter','tex')
+subplot(2,1,2)
+plot(lmsmall_AW_Open); title('Open Ocean')
+txtO = {'y=-2.3933x+42.069','rho=-0.0987','p=0.706'};
+text(1.1,30,txtO)
+xlabel('Annual mean area of ice-free water (km ^2 x10 ^6)','Interpreter','tex')
+ylabel('Area-weighted NPP (g C m ^-^2 a^-^1)','Interpreter','tex')
+sgtitle('Regression between area normalised/weighted annual NPP and mean ice-free area')
+
+
 %% length of growing season
 NPP_nans=vgpm_npp_all;
 NPP_nans(NPP_nans<0)=NaN;
 icecover=isnan(NPP_nans);
 
-
-% for permanantly ice covered - should change any ==12 to NaN before
+% for permanantly ice covered - should change any ==12( or 7) to NaN before
 % summing
 % orrrrr value will = length of time ice covered
     % so will want growing season length
@@ -152,8 +182,8 @@ growing_season(growing_season==0)=NaN;
 
 for rix = 1:length(region_sublist)
     for yix = 2003:2019
-        yolo=growing_season(:,:,yix-2002);
-        temp.(region_sublist{rix}).growseason(yix-2002,1)=nanmean(nanmean(yolo(temp.(region_sublist{rix}).box_logic)));
+        gstemp=growing_season(:,:,yix-2002);
+        temp.(region_sublist{rix}).growseason(yix-2002,1)=nanmean(nanmean(gstemp(temp.(region_sublist{rix}).box_logic)));
 %         temp.(region_sublist{rix}).growseason(yix-2002,1)=nanmean(nanmean(growing_season(:,:,yix-2002).*(temp.(region_sublist{rix}).box)));
     end
 end
@@ -196,7 +226,7 @@ geoshow('landareas.shp','facecolor','k')
 title(num2str(time_start_all(ix,2)))
 end
 
-% Only including months where there is full coverage
+% Only including months where there is full coverage (so excludes April-August)
 for yix = 2003:2019
     findyear=find(timedec>yix-0.3 & timedec<yix+0.25); % removes April-August (partial/no coverage)
     
@@ -205,6 +235,45 @@ for yix = 2003:2019
 end
 
 growing_season(growing_season==0)=NaN;
+growing_season_meanmap=mean(growing_season,3,'omitnan');
+gs_temp=growing_season(:,:,1);
+
+figure;
+% subplot(2,1,1)
+histogram(gs_temp(temp.(region_sublist{2}).box_logic),'Normalization','cdf')
+hold on
+% subplot(2,1,2)
+histogram(gs_temp(temp.(region_sublist{3}).box_logic),'Normalization','cdf')
+
+figure;
+edges=[0.5:0.5:7];
+yyaxis left
+histogram(growing_season_meanmap(temp.(region_sublist{3}).box_logic),edges)%,'Normalization','pdf')
+hold on
+yyaxis right
+histogram(growing_season_meanmap(temp.(region_sublist{2}).box_logic),edges)%,'Normalization','pdf')
+legend('Open Ocean','Shelf')
+
+edges=[0:1:7];
+figure;
+for yix = 2003:2019
+    subplot(6,3,yix-2002)
+    gstemp=growing_season(:,:,yix-2002);
+
+    yyaxis left
+    histogram(gstemp(temp.(region_sublist{3}).box_logic),edges)%,'Normalization','pdf')
+    hold on
+    
+    yyaxis right
+    histogram(gstemp(temp.(region_sublist{2}).box_logic),edges)%,'Normalization','pdf')
+    hold on
+    title(num2str(yix))
+    if yix==2003
+    legend('Open Ocean','Shelf')
+    end
+end
+
+
 
 figure;
 pcolor(lon_m,lat_m,growing_season(:,:,1)); shading flat
@@ -220,13 +289,22 @@ end
 
 for rix = 1:length(region_sublist)
     for yix = 2003:2019
-        yolo=growing_season(:,:,yix-2002);
-        temp.(region_sublist{rix}).growseason(yix-2002,1)=nanmean(nanmean(yolo(temp.(region_sublist{rix}).box_logic)));
-        temp.(region_sublist{rix}).growseason_med(yix-2002,1)=median(median(yolo(temp.(region_sublist{rix}).box_logic),'omitnan'),'omitnan');
+        gstemp=growing_season(:,:,yix-2002);
+        temp.(region_sublist{rix}).growseason(yix-2002,1)=mean(gstemp(temp.(region_sublist{rix}).box_logic),'omitnan');
+        temp.(region_sublist{rix}).growseason_med(yix-2002,1)=median(gstemp(temp.(region_sublist{rix}).box_logic),'omitnan');
+        temp.(region_sublist{rix}).growseason_mode(yix-2002,1)=mode(gstemp(temp.(region_sublist{rix}).box_logic));
 
-        temp.(region_sublist{rix}).growseason_meanstd(yix-2002,1)=std(yolo(temp.(region_sublist{rix}).box_logic),'omitnan');
+        temp.(region_sublist{rix}).growseason_meanstd(yix-2002,1)=std(gstemp(temp.(region_sublist{rix}).box_logic),'omitnan');
     end
 end
+
+figure;
+p1=plot(x,temp.Shelf.growseason_mode,'LineWidth',1.5,'Color',[0.8 0.4 0])%,'LineStyle','--')
+hold on
+p2=plot(x,temp.Open.growseason_mode,'LineWidth',1.5,'Color',[0.6 0.2 0.8])%,'LineStyle','--')
+legend('Shelf','Open')
+title('Mode number of months that are considered ice-free ')
+
 x=2003:2019;
 figure;
 bar(x,[temp.Shelf.growseason_med temp.Open.growseason_med])
@@ -259,8 +337,8 @@ xlabel('Year')
 % boxplot...
 for rix = 1:length(region_sublist)
     for yix = 2003:2019
-        yolo=growing_season(:,:,yix-2002);
-        temp.(region_sublist{rix}).growseason_map(:,:,yix-2002)=yolo(temp.(region_sublist{rix}).box_logic);
+        gstemp=growing_season(:,:,yix-2002);
+        temp.(region_sublist{rix}).growseason_map(:,:,yix-2002)=gstemp(temp.(region_sublist{rix}).box_logic);
     end
 %     temp.(region_sublist{rix}).growseason_map(isnan(temp.(region_sublist{rix}).growseason_map))=0;
     temp.(region_sublist{rix}).growseason_map(temp.(region_sublist{rix}).growseason_map==0)=NaN;

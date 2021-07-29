@@ -4,16 +4,23 @@ aix = 4;
 for rix = 1:length(region_sublist)
 
 regres.year=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1);
-regres.icesmall.(region_sublist{1})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e6;
-regres.icesmall.(region_sublist{3})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e6;
-regres.icesmall.(region_sublist{2})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e4;
+regres.icesmall.(region_sublist{1})=OceanProd.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(2:18,2)/1e6;
+regres.icesmall.(region_sublist{3})=OceanProd.(algorithm{aix}).(region_sublist{3}).IceFree_annualMEAN(2:18,2)/1e6;
+regres.icesmall.(region_sublist{2})=OceanProd.(algorithm{aix}).(region_sublist{2}).IceFree_annualMEAN(2:18,2)/1e4;
 regres.ice.(region_sublist{rix})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2);
 regres.NPP.(region_sublist{rix})=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2);
+regres.NPP_AW.(region_sublist{rix})=temp.(region_sublist{rix}).NPP_annual_AWrate(:,2)
 
 regres.tbl.(region_sublist{rix})=table(regres.year,regres.ice.(region_sublist{rix}),regres.NPP.(region_sublist{rix}),'VariableNames',{'Year','icefree','NPP'});
 regres.tbl.(region_sublist{rix})(1:5,:)
 regres.tblsmall.(region_sublist{rix})=table(regres.year,regres.icesmall.(region_sublist{rix}),regres.NPP.(region_sublist{rix}),'VariableNames',{'Year','icefree','NPP'});
 regres.tblsmall.(region_sublist{rix})(1:5,:)
+
+regres.tblAW.(region_sublist{rix})=table(regres.year,regres.ice.(region_sublist{rix}),regres.NPP_AW.(region_sublist{rix}),'VariableNames',{'Year','icefree','NPP_AW'});
+regres.tblAW.(region_sublist{rix})(1:5,:)
+regres.tblAWsmall.(region_sublist{rix})=table(regres.year,regres.icesmall.(region_sublist{rix}),regres.NPP_AW.(region_sublist{rix}),'VariableNames',{'Year','icefree','NPP_AW'});
+regres.tblAWsmall.(region_sublist{rix})(1:5,:)
+
 
 % regres.tbl.(region_sublist{rix})=table(OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1),...
 %     OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2),...
@@ -23,6 +30,9 @@ regres.tblsmall.(region_sublist{rix})(1:5,:)
 regres.lm.(region_sublist{rix})=fitlm(regres.tbl.(region_sublist{rix}),'NPP~icefree')
 regres.lmsmall.(region_sublist{rix})=fitlm(regres.tblsmall.(region_sublist{rix}),'NPP~icefree')
 
+regres.lm_AW.(region_sublist{rix})=fitlm(regres.tblAW.(region_sublist{rix}),'NPP_AW~icefree')
+regres.lmsmall_AW.(region_sublist{rix})=fitlm(regres.tblAWsmall.(region_sublist{rix}),'NPP_AW~icefree')
+
 % lmtest=fitlm(regres.tbl.(region_sublist{rix}),'NPP~icefree')
 
 end
@@ -31,9 +41,10 @@ end
 clear NPPice_regression
 NPPice_regression=figure;
 NPPice_regression.Position=[150 80 800 700];
-interesting=plot(regres.lm.(region_sublist{2}))
+interesting=plot(regres.lm_AW.(region_sublist{2}))
 hold on
-plot(regres.lm.(region_sublist{3}))
+plot(regres.lm_AW.(region_sublist{3}))
+
 
 % 2 x and y axes, but doesn't work?
 figure;
