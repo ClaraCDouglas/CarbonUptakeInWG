@@ -277,7 +277,7 @@ end
 
 figure;
 pcolor(lon_m,lat_m,growing_season(:,:,1)); shading flat
-% cm = get(gca,'Colormap');
+% cmblueice = get(gca,'Colormap');
 for yix = 2003:2019
 figure(yix-2002);
 pcolor(lon_m,lat_m,growing_season(:,:,yix-2002)); shading flat
