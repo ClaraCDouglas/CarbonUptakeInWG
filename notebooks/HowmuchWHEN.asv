@@ -438,15 +438,15 @@ for rix=1:length(region_sublist)
         Results.(region_sublist{rix}).avcumsum(yix,1)=mean(Results.(region_sublist{rix}).pixelcumsum(yix,:),'omitnan');
     end 
 end
-figure;
-for rix=1:length(region_sublist)
-    subplot(1,3,rix)
-    plot(Results.(region_sublist{rix}).pixelcumsum);%,'Color',[0.8 0.8 0.8]);
-    hold on;
-    txt=region_sublist(rix); title(txt);
-    plot(Results.(region_sublist{rix}).avcumsum,'k','LineWidth',2)
-end
 
+    figure; 
+    for rix=1:length(region_sublist)
+        subplot(1,3,rix)
+        plot(Results.(region_sublist{rix}).pixelcumsum);%,'Color',[0.8 0.8 0.8]);
+    hold on;
+        txt=region_sublist(rix); sgtitle(txt); 
+        plot(Results.(region_sublist{rix}).avcumsum,'k','LineWidth',2)
+        end
 
     figure; plot(Results.(region_sublist{2}).avcumsum,'Color',[0.8 0.4 0],'LineWidth',2); hold on;
         plot(Results.(region_sublist{3}).avcumsum,'Color',[0.6 0.2 0.8],'LineWidth',2)

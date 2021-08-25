@@ -36,6 +36,7 @@ findopen=find(IN_open==1);
 region_sublist={'Weddell','Shelf','Open'};
 regionfindlist= {'findweddell','findshelf','findopen'};
 
+clearvars temp
 for rix = 1:length(region_sublist)
     %box,box logic
     temp.(region_sublist{rix}).box = lat_m;
