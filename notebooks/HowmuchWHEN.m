@@ -1,11 +1,14 @@
 clearvars
-desktop = 1; 
+desktop = 0; 
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Matlab Add-ins'));
 else
+    addpath(genpath('C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG'))
     cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+    addpath(genpath('C:\Users\ccd1n18\Documents\Projects\m_map'));
+    addpath(genpath('C:\Users\ccd1n18\Documents\Projects\SetCMap'));
 end
 
 load('vgpm_imported.mat', 'VGPM_npp_tot_gC_all')
@@ -110,10 +113,11 @@ OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8]
 % yearno={'a'}
 for yix = 2003%:2019
     findyear=find(timedec>yix-0.5 & timedec<yix+0.5); 
-    NPP_motot_2003=VGPM_npp_tot_gC_all(850:1050,690:1300,findyear);
+    NPP_motot_2003=VGPM_npp_tot_gC_all(:,:,findyear); % cut down to study area
+%   NPP_motot_2003=VGPM_npp_tot_gC_all(850:1050,690:1300,findyear); % cut down to study area
 end
-lat_ms=lat_m(850:1050,690:1300);
-lon_ms=lon_m(850:1050,690:1300);
+% lat_ms=lat_m(850:1050,690:1300);
+% lon_ms=lon_m(850:1050,690:1300);
 NPP_tot_2003=nansum(NPP_motot_2003,3); % total NPP in each pixel for 2003
 NPP_tot_2003(NPP_tot_2003==0)=NaN;
 
@@ -125,11 +129,11 @@ NPP_propcum_2003=cumsum(NPP_prop_2003,3); % cumulative total of proportional val
 
     
  % Want to replicate this on a whole region/world scale, and make it efficient   
-[a,b]=find(NPP_propcum_2003(70,400,:)>=0.5);
-b_month=min(b);
-[a2,b2]=find(NPP_propcum_2003(70,400,:)==0);
-b2_month=max(b2);
-c_speed=b_month-b2_month; 
+%     [a,b]=find(NPP_propcum_2003(70,400,:)>=0.5);
+%     b_month=min(b);
+%     [a2,b2]=find(NPP_propcum_2003(70,400,:)==0);
+%     b2_month=max(b2);
+%     c_speed=b_month-b2_month; 
 % for this pixel, it takes 2 months of being ice free for phyto to carry out >= 50% of annual total NPP
 
 
@@ -139,14 +143,14 @@ output2=zeros(size(NPP_propcum_2003(:,:,1)));
 [r,c,v]=ind2sub(size(NPP_propcum_2003(:,:,1)),(find(NPP_propcum_2003(:,:,:)>=0.5)));
 
 for ix=max(v):-1:min(v)
-    selectmonth=ix
+    selectmonth=ix;
     search=find(v==selectmonth);
     for tix=1:length(search)
         output(r(search(tix)),c(search(tix)),ix)=selectmonth;
         output2(r(search(tix)),c(search(tix)))=selectmonth;
     end
 end
-figure; pcolor(output(:,:,7)); shading flat
+% figure; pcolor(output(:,:,7)); shading flat
 output2(output2==0)=NaN;
 figure; pcolor(output2); shading flat; 
 caxis([5 9])
@@ -155,22 +159,24 @@ caxis([5 9])
 [cmap] = setcmappete('rest',480,'reg'); 
 [cmap2] = setcmappete('rest',428,'reg'); 
 [cmap3] = setcmappete('rest',475,'rev'); 
+[cmap4] = setcmappete('rest',4,'rev'); 
+[cmap5] = setcmappete('rest',4,'rev'); 
 
 
 figure; 
 tiledlayout(3,2)
 ax1 = nexttile;
 pcolor(lon_m,lat_m,output2); shading flat; hold on; pp=colorbar;
+xlim([-65,37]);
+ylim([-80,-52]);
 caxis([5 9])
 cmap=cmap(1:round(length(cmap))/5:end,:);
 colormap(ax1,cmap)
-colormap(cmap)
+% colormap(cmap)
 pp.XTick=[5:1:9];
 pp.Ticks=[5.30:0.85:9];
 pp.TickLabels={'Nov','Dec','Jan','Feb','Mar'};
 pp.TickLength=0;
-xlim([-65,37]);
-ylim([-80,-52]);
 title('Month where cumulative total NPP reaches \geq 50% - 2003')
 % SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
 % OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
@@ -208,9 +214,7 @@ title('Last month of ice coverage/low light conditions')
 % SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
 % OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
 
-
-
-% all together!!
+% all together - number of months to get to 50%
 months2grow=output2-outputice2;
 figure; pcolor(months2grow); shading flat; 
 
@@ -255,7 +259,6 @@ for ixx= 1:1:12
     NPP_motot_2003_nans(:,:,ixx)=temp;
     clearvars temp
 end
-
 outputhalf=zeros(size(NPP_motot_2003_nans(:,:,9:12)));
 outputhalf2=zeros(size(NPP_motot_2003_nans(:,:,1)));
 half_2003=NPP_motot_2003_nans(:,:,9:12); % so 1 = Mar, and so on, to 4 = June
@@ -337,8 +340,10 @@ ylim([-80,-52]);
 title('Month where cumulative total NPP reaches \geq 99% - 2003')
 
 %% making mega plot
+load('Colormap_Delta_NPP.mat')
+load('openshelf_coord.mat')
 figure; 
-tiledlayout(2,2)
+tiledlayout(2,3)
 % total NPP
 ax1 = nexttile;
 pcolor(lon_m,lat_m,NPP_tot_2003); shading flat; hold on; gg=colorbar;
@@ -351,7 +356,7 @@ SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 
 OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
 % end of ice/winter season
 ax2 = nexttile;
-pcolor(lon_ms,lat_ms,outputice2); shading flat; hold on; qq=colorbar;
+pcolor(lon_m,lat_m,outputice2); shading flat; hold on; qq=colorbar;
 caxis([1 8])
 cmap2=cmap2(1:round(length(cmap2))/8:end,:);
 colormap(ax2,cmap2)
@@ -362,11 +367,14 @@ qq.TickLength=0;
 xlim([-65,37]);
 ylim([-80,-52]);
 title('Last month of ice coverage/low light conditions')
-SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
-OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
+% SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
+% OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
 % length of growing season
 ax3 = nexttile;
-pcolor(lon_ms,lat_ms,GrowingSeason_2003); shading flat; hold on; ss=colorbar;
+pcolor(lon_m,lat_m,GrowingSeason_2003); shading flat; hold on; ss=colorbar;
+xlim([-65,37]);
+ylim([-80,-52]);
+caxis([2 11])
 temp=parula;
 GScmap=temp(1:round(length(temp))/10:end,:);
 colormap(ax3,GScmap);
@@ -374,40 +382,87 @@ ss.XTick=[2:1:11];
 ss.Ticks=[2.4:0.9:11];
 ss.TickLabels={2:1:11};
 ss.TickLength=0;
-xlim([-65,37]);
-ylim([-80,-52]);
 title('Length of growing season - 2003 (months)')
-SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
-OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
+% SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
+% OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
 % number of months to reach 50% of annual total NPP
 ax4 = nexttile;
-pcolor(lon_ms,lat_ms,months2grow); shading flat; hold on; tt=colorbar;
-cmap3=cmap3(1:round(length(cmap3))/7:end,:);
-colormap(ax4,cmap3)
+pcolor(lon_m,lat_m,months2grow); shading flat; hold on; tt=colorbar;
+xlim([-65,37]);
+ylim([-80,-52]);
+caxis([1 7])
+cmap4=cmap4(1:round(length(cmap4))/7:end,:);
+cmap4(7,:)=0.3;
+colormap(ax4,cmap4)
 tt.XTick=[1:1:7];
 tt.Ticks=[1.30:0.85:7];
 tt.TickLabels={1:1:7};
-xlim([-65,37]);
-ylim([-80,-52]);
+tt.TickLength=0;
 title({'Number of months to reach 50% of total annual NPP - 2003';'(i.e. Number of months between ice coverage/low light and 50% of total NPP)'})
-SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
-OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
+% SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
+% OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
 
 % when 50% is reached
 ax5 = nexttile;
-pcolor(lon_ms,lat_ms,output2); shading flat; hold on; pp=colorbar;
+pcolor(lon_m,lat_m,output2); shading flat; hold on; pp=colorbar;
+xlim([-65,37]);
+ylim([-80,-52]);
 caxis([5 9])
 cmap=cmap(1:round(length(cmap))/5:end,:);
 colormap(ax5,cmap)
-colormap(cmap)
 pp.XTick=[5:1:9];
 pp.Ticks=[5.30:0.85:9];
 pp.TickLabels={'Nov','Dec','Jan','Feb','Mar'};
 pp.TickLength=0;
-xlim([-65,37]);
-ylim([-80,-52]);
 title('Month where cumulative total NPP reaches \geq 50% - 2003')
 
+%% Ratio between # mos and GS
+
+Ratio_2003=months2grow./GrowingSeason_2003;
+
+% when 50% is reached
+ax6 = nexttile;
+pcolor(lon_m,lat_m,Ratio_2003); shading flat; hold on; pp=colorbar;
+xlim([-65,37]);
+ylim([-80,-52]);
+caxis([0 0.8])
+temp=parula;
+Rcmap=temp(1:round(length(temp))/40:end,:);
+colormap(ax6,Rcmap);
+pp.XTick=[0:0.1:0.8];
+title({'Number of months to reach 50% / length of growing season';'2003'})
+
+
+
+%% getting month of >=75%
+output75=zeros(size(NPP_propcum_2003(:,:,:)));
+output75_2=zeros(size(NPP_propcum_2003(:,:,1)));
+[r,c,v]=ind2sub(size(NPP_propcum_2003(:,:,1)),(find(NPP_propcum_2003(:,:,:)>=0.75)));
+
+for ix=max(v):-1:min(v)
+    selectmonth=ix;
+    search=find(v==selectmonth);
+    for tix=1:length(search)
+        output75(r(search(tix)),c(search(tix)),ix)=selectmonth;
+        output75_2(r(search(tix)),c(search(tix)))=selectmonth;
+    end
+end
+
+months2grow75=output75_2-outputice2;
+
+figure;
+pcolor(lon_m,lat_m,months2grow75); shading flat; hold on; tt=colorbar;
+xlim([-65,37]);
+ylim([-80,-52]);
+caxis([1 9])
+cmap5=cmap5(1:round(length(cmap5))/9:end,:);
+% cmap4(7,:)=0.3;
+colormap(cmap5)
+tt.XTick=[1:1:7];
+tt.Ticks=[1.30:0.85:7];
+tt.TickLabels={1:1:7};
+tt.TickLength=0;
+title({'Number of months to reach 75% of total annual NPP - 2003';'(i.e. Number of months between ice coverage/low light and 75% of total NPP)'})
 
 %% line plot of cumulative NPP
 % run box logic (MAKE A FUNCTION)
