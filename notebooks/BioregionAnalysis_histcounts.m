@@ -248,6 +248,9 @@ x_NPP=vgpm_av_day_nan(findweddell);
 x_NPP(isnan(x_NPP))=-9999;
 setedgesNPP=[-9999 0:100:500 800:300:1800]
 [N_NPP,edges_NPP,bin_NPP]=histcounts(x_NPP,setedgesNPP)
+        % N_NPP = number of occurrences within each bin
+        % edges_NPP = in ascending order from -9999 (NaN) to 1800
+        % bin = bin number allocation (where 1 = -9999 - 0, 2 is 0-100 and so on
 
 
 % boxplot using bin# vs bathy
