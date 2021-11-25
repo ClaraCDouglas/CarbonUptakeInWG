@@ -1,5 +1,5 @@
 clearvars
-desktop = 0; 
+desktop = 0;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
@@ -21,7 +21,7 @@ test={'a':'q'}
 yearno={'a'}
 for yix = 2003%:2019
     findyear=find(timedec>yix-0.3 & timedec<yix+0.25); % removes April-August (partial/no coverage)
-    
+
     map_7mototal_NPP(:,:,yix-2002)=nansum(VGPM_npp_tot_gC_all(:,:,findyear),3);
 end
 map_7mototal_NPP(map_7mototal_NPP==0)=NaN;
@@ -29,7 +29,7 @@ for yix = 2003%:2019
     findyear=find(timedec>yix-0.3 & timedec<yix+0.25); % removes April-August (partial/no coverage)
 
     yearmaps.(yearno{yix-2002})=(VGPM_npp_tot_gC_all(:,:,findyear));
-               
+
 end
 
 
@@ -112,9 +112,9 @@ OO_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8]
 % test={'a':'q'}
 % yearno={'a'}
 for yix = 2003%:2019
-    findyear=find(timedec>yix-0.5 & timedec<yix+0.5); 
+    findyear=find(timedec>yix-0.5 & timedec<yix+0.5);
     NPP_motot_2003=VGPM_npp_tot_gC_all(:,:,findyear); % cut down to study area
-%   NPP_motot_2003=VGPM_npp_tot_gC_all(850:1050,690:1300,findyear); % cut down to study area
+    %   NPP_motot_2003=VGPM_npp_tot_gC_all(850:1050,690:1300,findyear); % cut down to study area
 end
 % lat_ms=lat_m(850:1050,690:1300);
 % lon_ms=lon_m(850:1050,690:1300);
@@ -124,16 +124,16 @@ NPP_tot_2003(NPP_tot_2003==0)=NaN;
 NPP_prop_2003=NPP_motot_2003./NPP_tot_2003; % monthly total NPP as a proportion of annual total
 
 NPP_abscumtot_2003=cumsum(NPP_motot_2003,3); % cumulative total of absolute NPP values
-NPP_propcum_2003=cumsum(NPP_prop_2003,3); % cumulative total of proportional values 
-    % ^ (use this one to assess when 50% occurs)
+NPP_propcum_2003=cumsum(NPP_prop_2003,3); % cumulative total of proportional values
+% ^ (use this one to assess when 50% occurs)
 
-    
- % Want to replicate this on a whole region/world scale, and make it efficient   
+
+% Want to replicate this on a whole region/world scale, and make it efficient
 %     [a,b]=find(NPP_propcum_2003(70,400,:)>=0.5);
 %     b_month=min(b);
 %     [a2,b2]=find(NPP_propcum_2003(70,400,:)==0);
 %     b2_month=max(b2);
-%     c_speed=b_month-b2_month; 
+%     c_speed=b_month-b2_month;
 % for this pixel, it takes 2 months of being ice free for phyto to carry out >= 50% of annual total NPP
 
 
@@ -152,18 +152,18 @@ for ix=max(v):-1:min(v)
 end
 % figure; pcolor(output(:,:,7)); shading flat
 output2(output2==0)=NaN;
-figure; pcolor(output2); shading flat; 
+figure; pcolor(output2); shading flat;
 caxis([5 9])
 
 
-[cmap] = setcmappete('rest',480,'reg'); 
-[cmap2] = setcmappete('rest',428,'reg'); 
-[cmap3] = setcmappete('rest',475,'rev'); 
-[cmap4] = setcmappete('rest',4,'rev'); 
-[cmap5] = setcmappete('rest',4,'rev'); 
+[cmap] = setcmappete('rest',480,'reg');
+[cmap2] = setcmappete('rest',428,'reg');
+[cmap3] = setcmappete('rest',475,'rev');
+[cmap4] = setcmappete('rest',4,'rev');
+[cmap5] = setcmappete('rest',4,'rev');
 
 
-figure; 
+figure;
 tiledlayout(3,2)
 ax1 = nexttile;
 pcolor(lon_m,lat_m,output2); shading flat; hold on; pp=colorbar;
@@ -196,9 +196,9 @@ for ix=min(vi):1:max(vi)
 end
 figure; pcolor(outputice(:,:,7)); shading flat
 outputice2(outputice2==0)=NaN;
-figure; pcolor(outputice2); shading flat; 
+figure; pcolor(outputice2); shading flat;
 
-% figure; 
+% figure;
 ax2 = nexttile;
 pcolor(lon_m,lat_m,outputice2); shading flat; hold on; qq=colorbar;
 caxis([1 8])
@@ -216,7 +216,7 @@ title('Last month of ice coverage/low light conditions')
 
 % all together - number of months to get to 50%
 months2grow=output2-outputice2;
-figure; pcolor(months2grow); shading flat; 
+figure; pcolor(months2grow); shading flat;
 
 % figure;
 ax3 = nexttile;
@@ -236,7 +236,7 @@ title({'Number of months to reach 50% of total annual NPP - 2003';'(i.e. Number 
 
 
 % total NPP per year map
-load('Colormap_Delta_NPP.mat') 
+load('Colormap_Delta_NPP.mat')
 figure
 pcolor(lon_m,lat_m,NPP_tot_2003); shading flat; hold on; gg=colorbar;
 colormap(ColourmapDelta_NPP)
@@ -264,7 +264,7 @@ outputhalf2=zeros(size(NPP_motot_2003_nans(:,:,1)));
 half_2003=NPP_motot_2003_nans(:,:,9:12); % so 1 = Mar, and so on, to 4 = June
 [rh,ch,vh]=ind2sub(size(half_2003(:,:,1)),(find(half_2003(:,:,:)==0)));
 
-% getting month of 
+% getting month of
 for ix=max(vh):-1:min(vh)
     selectmonth=ix
     search=find(vh==selectmonth);
@@ -275,8 +275,8 @@ for ix=max(vh):-1:min(vh)
 end
 % figure; pcolor(outputhalf(:,:,4)); shading flat
 outputhalf2(outputhalf2==0)=NaN;
-figure; 
-pcolor(lon_m,lat_m,outputhalf2); shading flat; hold on; 
+figure;
+pcolor(lon_m,lat_m,outputhalf2); shading flat; hold on;
 temp=flipud(winter);
 shortwinter=temp(1:round(length(temp))/4:end,:);
 colormap(shortwinter)
@@ -289,12 +289,12 @@ ww.TickLength=0;
 % calculate growing season
 
 endofGS=outputhalf2+8;
-% figure; 
-% pcolor(lon_m,lat_m,endofGS); shading flat; hold on; 
+% figure;
+% pcolor(lon_m,lat_m,endofGS); shading flat; hold on;
 
 GrowingSeason_2003=endofGS-outputice2;
-figure; 
-pcolor(lon_m,lat_m,GrowingSeason_2003); shading flat; hold on; 
+figure;
+pcolor(lon_m,lat_m,GrowingSeason_2003); shading flat; hold on;
 temp=parula;
 GScmap=temp(1:round(length(temp))/10:end,:);
 colormap(GScmap);
@@ -323,10 +323,10 @@ for ix=max(v100):-1:min(v100)
 end
 figure; pcolor(output100(:,:,7)); shading flat
 output100_2(output100_2==0)=NaN;
-figure; pcolor(output100_2); shading flat; 
+figure; pcolor(output100_2); shading flat;
 caxis([5 9])
 
-figure; 
+figure;
 pcolor(lon_m,lat_m,output100_2); shading flat; hold on; hh=colorbar;
 caxis([7 11])
 cmap=cmap(1:round(length(cmap))/5:end,:);
@@ -342,7 +342,7 @@ title('Month where cumulative total NPP reaches \geq 99% - 2003')
 %% making mega plot
 load('Colormap_Delta_NPP.mat')
 load('openshelf_coord.mat')
-figure; 
+figure;
 tiledlayout(2,3)
 % total NPP
 ax1 = nexttile;
@@ -468,7 +468,7 @@ title({'Number of months to reach 75% of total annual NPP - 2003';'(i.e. Number 
 % run box logic (MAKE A FUNCTION)
 
 for yix = 2003%:2019
-    findyear=find(timedec>yix-0.5 & timedec<yix+0.5); 
+    findyear=find(timedec>yix-0.5 & timedec<yix+0.5);
     NPP_motot_2003=VGPM_npp_tot_gC_all(:,:,findyear);
 end
 % lat_m=lat_m(850:1050,690:1300);
@@ -479,8 +479,8 @@ NPP_tot_2003(NPP_tot_2003==0)=NaN;
 NPP_prop_2003=NPP_motot_2003./NPP_tot_2003; % monthly total NPP as a proportion of annual total
 
 NPP_abscumtot_2003=cumsum(NPP_motot_2003,3); % cumulative total of absolute NPP values
-NPP_propcum_2003=cumsum(NPP_prop_2003,3); % cumulative total of proportional values 
-    % ^ (use this one to assess when 50% occurs)
+NPP_propcum_2003=cumsum(NPP_prop_2003,3); % cumulative total of proportional values
+% ^ (use this one to assess when 50% occurs)
 clearvars Results
 for rix=1:length(region_sublist)
     for mix=1:1:12
@@ -488,10 +488,10 @@ for rix=1:length(region_sublist)
         Results.(region_sublist{rix}).pixelcumsum(:,mix)=yemp(temp.(region_sublist{rix}).box_logic);
     end
     Results.(region_sublist{rix}).pixelcumsum=Results.(region_sublist{rix}).pixelcumsum';
-    
+
     for yix=1:1:12
         Results.(region_sublist{rix}).avcumsum(yix,1)=mean(Results.(region_sublist{rix}).pixelcumsum(yix,:),'omitnan');
-    end 
+    end
 end
 figure;
 for rix=1:length(region_sublist)
@@ -503,6 +503,6 @@ for rix=1:length(region_sublist)
 end
 
 
-    figure; plot(Results.(region_sublist{2}).avcumsum,'Color',[0.8 0.4 0],'LineWidth',2); hold on;
-        plot(Results.(region_sublist{3}).avcumsum,'Color',[0.6 0.2 0.8],'LineWidth',2)
+figure; plot(Results.(region_sublist{2}).avcumsum,'Color',[0.8 0.4 0],'LineWidth',2); hold on;
+plot(Results.(region_sublist{3}).avcumsum,'Color',[0.6 0.2 0.8],'LineWidth',2)
 
