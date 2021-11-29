@@ -32,6 +32,11 @@ cafe_npp_all_8day=NaN*ones(540,2160,length(D0)); %(1080,2160,length(D0));
 
 % cd ..\Data\cafe                    
 b=struct2cell(D0);
+% read attributes/file info
+    % temp=D0(1,1);
+    % temp=temp.name
+    % temp=hdfinfo(temp)
+    % temp.SDS.Attributes.Name
 
 % update these limits to reflect your region of interest 
     % currently importing whole world
@@ -47,7 +52,7 @@ latC=latres(J);
 lonC=lonres(K);
 
 % Loop through the multiple files to create one Matlab variable
-for iix=1%:length(D0)
+for iix=1:length(D0)
     disp(iix)
     list=b{1,iix};
     % scaling equation (for the example npp time series there is no scaling
@@ -83,8 +88,8 @@ for tix=1:length(D0)
 %disp(tix)
     list=b{1,tix};
     fileinfo = hdfinfo(list);
-    attr_infostart = fileinfo.Attributes(3).Value;
-    attr_infoend = fileinfo.Attributes(4).Value;
+    attr_infostart = fileinfo.Attributes(3).Value; % start time in dd/mm/yyyy hh:mm:ss
+    attr_infoend = fileinfo.Attributes(4).Value; % end time in dd/mm/yyyy hh:mm:ss
     time_start_all(tix,:) = datevec(attr_infostart);
     time_end_all(tix,:) = datevec(attr_infoend);
 end
