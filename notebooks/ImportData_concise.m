@@ -28,7 +28,7 @@ D0 = dir(fullfile(filebase,'*.hdf'));
 %% Importing multiple HDF files
     %% NPP 'algo choice' data
 % vgpm_npp_all=NaN*ones(1080,2160,length(D0)); 
-cafe_npp_all_8day=NaN*ones(1080,2160,length(D0)); 
+cafe_npp_all_8day=NaN*ones(540,2160,length(D0)); %(1080,2160,length(D0)); 
 
 % cd ..\Data\cafe                    
 b=struct2cell(D0);
@@ -37,7 +37,7 @@ b=struct2cell(D0);
     % currently importing whole world
 latres=linspace(-90,90,1080);
 lonres=linspace(-180,180,2160);
-lat_north=100;
+lat_north=0; % only importing south of equator
 lat_south=-100;
 lon_west=-200;
 lon_east=200;
@@ -91,8 +91,8 @@ end
 
 clear tix list fileinfo attr_infostart attr_infoend
     %% lat/lon data
-        latrownumber=0:1:1079;
-        for aix = 1:1080
+        latrownumber=540:1:1079; %0:1:1079;
+        for aix = 1:540 %1080
             latrow=latrownumber(aix);
             spacing=1/6;
             latdistance=latrow*spacing;
@@ -111,18 +111,18 @@ clear tix list fileinfo attr_infostart attr_infoend
             lonpixelcenter(aix,1)=lonpixelwestedge(aix,1)+(1/12);
         end
         
-lat_m=NaN*ones(1080,2160);
-lon_m=NaN*ones(1080,2160);
+lat_m=NaN*ones(540,2160);
+lon_m=NaN*ones(540,2160);
 for ii = 1:2160
     lat_m(:,ii)=latpixelcenter;
 end
-for ii = 1:1080
+for ii = 1:540
     lon_m(ii,:)=lonpixelcenter;
 end
     %% Calculate area of boxes
         earthgeoid = almanac('earth','geoid','km','grs80'); % This is from MATLAB Mapping Toolbox
         disp(['...'])
-        area_MODIScafe_km2=NaN*ones(1080,2160);
+        area_MODIScafe_km2=NaN*ones(540,2160);
         
         for aix = 1:length(latpixelnorthedge)
             lat_n=latpixelnorthedge(aix);
@@ -168,7 +168,7 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
         end
 clear ii npptp findneg
 %% Save variables
-cd ..\..\Workspace_variables
+% cd ..\..\Workspace_variables
 save cafe_8day_imported -v7.3
 
         
