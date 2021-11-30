@@ -11,6 +11,7 @@ clearvars
 % D0 = dir(fullfile(filedir,'*.hdf'));
 
 % Passport - data holdall
+cd 'E:\Data\NPP\NPP_extracted'
 filebase = 'E:\Data\NPP\NPP_extracted';
 D0 = dir(fullfile(filebase,'*.hdf'));
 
@@ -152,11 +153,18 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
         fprintf(['Calculate NPP: (of ',num2str(length(D0)),'):  '])
 
         for ii = 1:length(D0)
-            %fprintf_r(' %i', ii);
+            fprintf(' %i', ii);
             npptp=cafe_npp_all_8day(:,:,ii);
             findneg=find(npptp<0);
             npptp(findneg)=0;
-            cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+
+            if ~(time_start_all(ii,2)==12)
+                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+            elseif time_start_all(ii,2)==12
+                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+            else
+                error('ERROR in total NPP per 8 day calc')
+            end
         end
 
     %% Calculate npp for month in gC - WITH NANS
@@ -169,12 +177,22 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
             npptp=cafe_npp_all_8day(:,:,ii);
             findneg=find(npptp<0);
             npptp(findneg)=NaN;
-            cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+%             cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+        
+            if ~(time_start_all(ii,2)==12)
+                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+            elseif time_start_all(ii,2)==12
+                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+            else
+                error('ERROR in total NPP per 8 day calc with NaNs')
+            end
+
+
         end
 clear ii npptp findneg
 %% Save variables
 % cd ..\..\Workspace_variables
-save cafe_8day_imported -v7.3
+save cafe_8day_imported_recalc -v7.3
 
         
         
