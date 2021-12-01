@@ -1,7 +1,7 @@
 %% Processing data brought in by ImportData_concise.m
 % clearvars
 
-desktop = 1;
+desktop = 0;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
@@ -15,7 +15,7 @@ end
 
 %algorithm={'cafe','cbpm','eppley','vgpm'};
 algorithm={'cafe'};
-setup.checkregions=true;
+setup.checkregions=false;
 setup.plotfigures=false;
 setup.startyear=2002;
 setup.endyear=2020;
@@ -28,13 +28,15 @@ setup.eightday=true;
 % %     if aix==4
 % %         load([algorithm{aix} '_imported.mat'], 'VGPM*');
 % %     end
-% 
-% %     load([algorithm{aix} '_imported.mat']);
-% 
+% if setup.monthly
+%      load([algorithm{aix} '_imported.mat']);
+% elseif setup.eightday
 %     load([algorithm{aix} '_8day_imported.mat']);
 % end
-% % vgpm_npp_tot_gC_all=VGPM_npp_tot_gC_all;
-% % vgpm_npp_tot_gC_nans=VGPM_npp_tot_gC_nans;
+% 
+% end
+% vgpm_npp_tot_gC_all=VGPM_npp_tot_gC_all;
+% vgpm_npp_tot_gC_nans=VGPM_npp_tot_gC_nans;
 area_MODIScafe_m2=area_MODISvgpm_m2;
 clearvars VGPM_npp_tot_gC_nans VGPM_npp_tot_gC_all D0 algo_choice b filebase filedir fill *vgpm*
 if setup.monthly
@@ -105,8 +107,8 @@ if setup.monthly
                 % Area of Open Ice-Free water (per month)
                 %             eval(['temp.area_MODIS=area_MODIS',algorithm{aix},'_m2;']);
                 %             OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1)=nansum(nansum((temp.NPPmask).*(temp.area_MODIS).*(temp.(region_sublist{rix}).box)));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1)=nansum(nansum(NPPmask.*area_MODISVGPM_m2.*(temp.(region_sublist{rix}).box)));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_km2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2/1e6;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1)=nansum(nansum(NPPmask.*area_MODISVGPM_m2.*(temp.(region_sublist{rix}).box)));
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_km2=OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2/1e6;
             end
         end
     end
@@ -121,24 +123,24 @@ if setup.monthly
                 % Total NPP per month
                 temp.NPP_tot=ones(1080,2160);
                 eval(['temp.NPP(:,:)=',algorithm{aix},'_npp_tot_gC_nans(:,:,tix);']);
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC(tix,1)=nansum(nansum(temp.NPP(temp.(region_sublist{rix}).box_logic)));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC/1e12;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC(tix,1)=nansum(nansum(temp.NPP(temp.(region_sublist{rix}).box_logic)));
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC/1e12;
 
                 % Mean daily rates for each month
                 temp.NPP_daily=ones(1080,2160);
                 eval(['temp.NPP_daily(:,:)=',algorithm{aix},'_npp_all(:,:,tix);']);
                 temp.findneg=find(temp.NPP_daily<0);
                 temp.NPP_daily(temp.findneg)=NaN;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans(tix,1)=nanmean(nanmean(temp.NPP_daily(temp.(region_sublist{rix}).box_logic)));
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans(tix,1)=nanmean(nanmean(temp.NPP_daily(temp.(region_sublist{rix}).box_logic)));
                 % with zeros for the NaN months
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2(find(isnan(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2)))=0;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2(find(isnan(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2)))=0;
 
                 % Monthly NPP rates from daily rates (daily*number of days in month)
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_mgm2_month(tix,1)=(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2(tix,1)).*time_end_all(tix,3);
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_mgm2_month(tix,1)=(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2(tix,1)).*time_end_all(tix,3);
 
                 % Monthly NPP rates calculated by total NPP per month/(max)area of open water per month
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).monthly_NPP_gm2(tix,1)=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC(tix,1)./OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1);
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).monthly_NPP_gm2(tix,1)=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC(tix,1)./OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1);
             end
         end
     end
@@ -148,34 +150,34 @@ if setup.monthly
         for rix = 1:length(region_sublist)
             for mix = 1:12
                 % mean/anom NPP
-                temp.tot=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC;
-                temp.totTG=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC;
+                temp.tot=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC;
+                temp.totTG=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC;
                 findmonth=find(time_start_all(:,2)==mix);
 
                 temp.mean=mean(temp.tot(findmonth));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix,1)=temp.mean;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix,1)=temp.mean;
 
                 temp.meanTG=mean(temp.totTG(findmonth));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix,1)=temp.meanTG;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix,1)=temp.meanTG;
 
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_gC(findmonth,1)=temp.tot(findmonth)-OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix);
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_TgC(findmonth,1)=temp.totTG(findmonth)-OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix);
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_gC(findmonth,1)=temp.tot(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix);
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_TgC(findmonth,1)=temp.totTG(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix);
 
                 % mean/anom for mean daily rates per month
-                temp.daily=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2;
+                temp.daily=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2;
                 temp.meandaily=mean(temp.daily(findmonth));
 
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix,1)=temp.meandaily;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix,1)=temp.meandaily;
 
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_avday_mgm2(findmonth,1)=temp.daily(findmonth)-OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix);
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_avday_mgm2(findmonth,1)=temp.daily(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix);
 
 
                 % mean/anom ice free
-                temp.totkm2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_km2;
+                temp.totkm2=OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_km2;
                 temp.meankm2=mean(temp.totkm2(findmonth));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix,1)=temp.meankm2;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix,1)=temp.meankm2;
 
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).anommonth_icefree(findmonth,1)=temp.totkm2(findmonth)-OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix);
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_icefree(findmonth,1)=temp.totkm2(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix);
             end
         end
     end
@@ -188,37 +190,37 @@ if setup.monthly
                 findyear=find(timedec>yix-0.5 & timedec<yix+0.5);
                 % Integrated NPP over austral year (June to June)
                 % and total and mean annual open ice-free water area and max monthly
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,1)=yix;
 
                 % and annual rates of NPP
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2001,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2001,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2001,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2001,1)=yix;
+                OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2001,1)=yix;
 
                 if size(findyear)<12
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=NaN;
 
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2001,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2001,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2001,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2001,2)=NaN;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2001,2)=NaN;
                 else
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC(findyear,1));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_km2(findyear));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)/12;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=max(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2(findyear,1),[],'omitnan');
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=sum(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC(findyear,1));
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=sum(OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_km2(findyear));
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)/12;
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=max(OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2(findyear,1),[],'omitnan');
 
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2001,2)=nansum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_mgm2_month(findyear));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2001,2)=nansum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).monthly_NPP_mgm2(findyear,1));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2001,2)=(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)*1e12)/(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)*1e6);
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2001,2)=(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)*1e12)/OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2);
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2001,2)=nansum(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_mgm2_month(findyear));
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2001,2)=nansum(OceanProd.(algorithm{aix}).(region_sublist{rix}).monthly_NPP_mgm2(findyear,1));
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2001,2)=(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)*1e12)/(OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)*1e6);
+                    OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2001,2)=(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)*1e12)/OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2);
                 end
             end
         end
@@ -227,16 +229,16 @@ if setup.monthly
     % mean annual total NPP and ice-free water area
     for aix = 1:length(algorithm)
         for rix = 1:length(region_sublist)
-            OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_MEANtot_TgC_annual=nanmean(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(:,2));
-            OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_MEANMEAN=nanmean(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(:,2));
+            OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_MEANtot_TgC_annual=nanmean(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(:,2));
+            OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_MEANMEAN=nanmean(OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(:,2));
         end
     end
 
     for aix = 1:length(algorithm)
-        OceanProd_8day.(algorithm{aix}).(region_sublist{2}).IceFree_proportion(:,1)=(OceanProd_8day.(algorithm{aix}).(region_sublist{2}).IceFree_annualMEAN(:,2)./OceanProd_8day.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(:,2)).*100;
-        OceanProd_8day.(algorithm{aix}).(region_sublist{2}).IceFree_AVproportion=nanmean(OceanProd_8day.(algorithm{aix}).(region_sublist{2}).IceFree_proportion(:,1));
-        OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_proportion(:,1)=(OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_annualMEAN(:,2)./OceanProd_8day.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(:,2)).*100;
-        OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_AVproportion=nanmean(OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_proportion(:,1));
+        OceanProd.(algorithm{aix}).(region_sublist{2}).IceFree_proportion(:,1)=(OceanProd.(algorithm{aix}).(region_sublist{2}).IceFree_annualMEAN(:,2)./OceanProd.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(:,2)).*100;
+        OceanProd.(algorithm{aix}).(region_sublist{2}).IceFree_AVproportion=nanmean(OceanProd.(algorithm{aix}).(region_sublist{2}).IceFree_proportion(:,1));
+        OceanProd.(algorithm{aix}).(region_sublist{3}).IceFree_proportion(:,1)=(OceanProd.(algorithm{aix}).(region_sublist{3}).IceFree_annualMEAN(:,2)./OceanProd.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(:,2)).*100;
+        OceanProd.(algorithm{aix}).(region_sublist{3}).IceFree_AVproportion=nanmean(OceanProd.(algorithm{aix}).(region_sublist{3}).IceFree_proportion(:,1));
     end
 
     clearvars regionfindlist findweddell findshelf findopen temp setup
@@ -274,8 +276,10 @@ if setup.eightday
                 % Area of Open Ice-Free water (per month)
                 %             eval(['temp.area_MODIS=area_MODIS',algorithm{aix},'_m2;']);
                 %             OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1)=nansum(nansum((temp.NPPmask).*(temp.area_MODIS).*(temp.(region_sublist{rix}).box)));
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1)=sum(sum(NPPmask.*area_MODIScafe_m2.*(temp.(region_sublist{rix}).box),'omitnan'),'omitnan');
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_km2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2/1e6;
+                
+                % where there is ocean * area in m2 * region box. then summed = total area that there is ocean for each 8 day period  
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_m2(tix,1)=sum(sum(NPPmask.*area_MODIScafe_m2.*(temp.(region_sublist{rix}).box),'omitnan'),'omitnan');
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_km2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_m2/1e6;
             end
         end
     end
@@ -297,6 +301,8 @@ if setup.eightday
                 % Total NPP per 8-day period
                 temp.NPP_tot=ones(540,2160);
                 eval(['temp.NPP(:,:)=',algorithm{aix},'_npp_tot_gC_nans_8day(:,:,tix);']);
+                % temp.NPP is total NPP in 8 day period (land/ice/clouds=Nan)
+                    %summed for pixels within region
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC(tix,1)=sum(sum(temp.NPP(temp.(region_sublist{rix}).box_logic),'omitnan'),'omitnan');
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC/1e12;
 
@@ -306,65 +312,64 @@ if setup.eightday
                 temp.findneg=find(temp.NPP_daily<0);
                 temp.NPP_daily(temp.findneg)=NaN;
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans(tix,1)=mean(mean(temp.NPP_daily(temp.(region_sublist{rix}).box_logic),'omitnan'),'omitnan');
-                % with zeros for the NaN months
+                % replace NaN estimates for 8 day period with zeros
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2(find(isnan(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2)))=0;
-
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2(isnan(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2))=0;
             end
         end
     end
 
     % Monthly means and anomalies - not run just now
-    %  for aix = 1:length(algorithm)
-    %      for rix = 1:length(region_sublist)
-    %          for mix = 1:12
-    %              % mean/anom NPP
-    %              temp.tot=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC;
-    %              temp.totTG=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC;
-    %              findmonth=find(time_start_all(:,2)==mix);
-    %
-    %              temp.mean=mean(temp.tot(findmonth));
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix,1)=temp.mean;
-    %
-    %              temp.meanTG=mean(temp.totTG(findmonth));
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix,1)=temp.meanTG;
-    %
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_gC(findmonth,1)=temp.tot(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix);
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_TgC(findmonth,1)=temp.totTG(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix);
-    %
-    %              % mean/anom for mean daily rates per month
-    %              temp.daily=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2;
-    %              temp.meandaily=mean(temp.daily(findmonth));
-    %
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix,1)=temp.meandaily;
-    %
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_avday_mgm2(findmonth,1)=temp.daily(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix);
-    %
-    %
-    %              % mean/anom ice free
-    %              temp.totkm2=OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_km2;
-    %              temp.meankm2=mean(temp.totkm2(findmonth));
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix,1)=temp.meankm2;
-    %
-    %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_icefree(findmonth,1)=temp.totkm2(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix);
-    %          end
-    %      end
-    %  end
-    %  clearvars findmonth
+        %  for aix = 1:length(algorithm)
+        %      for rix = 1:length(region_sublist)
+        %          for mix = 1:12
+        %              % mean/anom NPP
+        %              temp.tot=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC;
+        %              temp.totTG=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC;
+        %              findmonth=find(time_start_all(:,2)==mix);
+        %
+        %              temp.mean=mean(temp.tot(findmonth));
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix,1)=temp.mean;
+        %
+        %              temp.meanTG=mean(temp.totTG(findmonth));
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix,1)=temp.meanTG;
+        %
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_gC(findmonth,1)=temp.tot(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_gC(mix);
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_tot_TgC(findmonth,1)=temp.totTG(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_tot_TgC(mix);
+        %
+        %              % mean/anom for mean daily rates per month
+        %              temp.daily=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2;
+        %              temp.meandaily=mean(temp.daily(findmonth));
+        %
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix,1)=temp.meandaily;
+        %
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_NPP_avday_mgm2(findmonth,1)=temp.daily(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_NPP_avday_mgm2(mix);
+        %
+        %
+        %              % mean/anom ice free
+        %              temp.totkm2=OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_km2;
+        %              temp.meankm2=mean(temp.totkm2(findmonth));
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix,1)=temp.meankm2;
+        %
+        %              OceanProd.(algorithm{aix}).(region_sublist{rix}).anommonth_icefree(findmonth,1)=temp.totkm2(findmonth)-OceanProd.(algorithm{aix}).(region_sublist{rix}).meanmonth_icefree(mix);
+        %          end
+        %      end
+        %  end
+        %  clearvars findmonth
 
     % Annual total NPP, annual open water variables, annual rates of NPP
     for aix = 1:length(algorithm)
         for rix = 1:length(region_sublist)
-            for yix = 2003:2020
+            for yix = 2002:2020
                 findyear1=find(time_start_all(:,1)==yix-1 & time_start_all(:,2)>=7);
                 findyear2=find(time_start_all(:,1)==yix & time_start_all(:,2)<=6);
                 findyear=cat(1,findyear1,findyear2);
                 % Integrated NPP over austral year (June to June)
                 % and total and mean annual open ice-free water area and max monthly
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2002,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2002,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2002,1)=yix;
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2002,1)=yix;
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,1)=yix;
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,1)=yix;
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,1)=yix;
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,1)=yix;
 
                 % and annual rates of NPP
 %                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2002,1)=yix;
@@ -373,20 +378,20 @@ if setup.eightday
 %                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2002,1)=yix;
 
                 if size(findyear)<46
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2002,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2002,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2002,2)=NaN;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2002,2)=NaN;
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=NaN;
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=NaN;
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=NaN;
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=NaN;
 
 %                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2002,2)=NaN;
 %                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2002,2)=NaN;
 %                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromannual(yix-2002,2)=NaN;
 %                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_rates_yearmaxOW(yix-2002,2)=NaN;
                 else
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2002,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC(findyear,1));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2002,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_km2(findyear));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2002,2)=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2002,2)/12;
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2002,2)=max(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_month_m2(findyear,1),[],'omitnan');
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC(findyear,1));
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_km2(findyear));
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)/12;
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=max(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_km2(findyear,1),[],'omitnan');
 
                     %                  OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2002,2)=nansum(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_mgm2_month(findyear));
                     %                  OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_frommonth(yix-2002,2)=nansum(OceanProd.(algorithm{aix}).(region_sublist{rix}).monthly_NPP_mgm2(findyear,1));
@@ -413,7 +418,7 @@ if setup.eightday
         OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_AVproportion=nanmean(OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_proportion(:,1));
     end
 
-    clearvars regionfindlist findweddell findshelf findopen temp setup
+%     clearvars regionfindlist findweddell findshelf findopen temp setup
 
 %     save('ProcessedData_8day.mat','OceanProd','algorithm','region_sublist','timedec');
 
@@ -427,9 +432,29 @@ end
 
 %% check data
 load('ProcessedData.mat', 'OceanProd')
+load('ProcessedData.mat', 'timedec')
+time_start_all_8day=time_start_all;
+load('cafe_imported.mat', 'time_start_all');
 
 figure;
-plot(OceanProd.cafe.Open.NPP_tot_gC)
+plot(timedec,OceanProd.cafe.Open.NPP_tot_gC)
 
 figure;
-plot(OceanProd_8day.cafe.Open.NPP_tot_gC)
+plot(datetime(time_start_all_8day),OceanProd_8day.cafe.Open.NPP_tot_gC)
+
+%145seconds to run on laptop
+
+figure;
+plot(OceanProd.cafe.Open.NPP_tot_TgC_annual(:,1),OceanProd.cafe.Open.NPP_tot_TgC_annual(:,2))
+hold on
+plot(OceanProd_8day.cafe.Open.NPP_tot_TgC_annual(:,1),OceanProd_8day.cafe.Open.NPP_tot_TgC_annual(:,2))
+
+
+
+figure;
+plot(datetime(time_start_all),OceanProd.cafe.Open.NPP_av_mgm2_nans)
+hold on
+plot(datetime(time_start_all_8day),OceanProd_8day.cafe.Open.NPP_av_mgm2_nans)
+ylabel('NPP average daily rate mg m^-^2 day^-^1')
+title('Differences in daily rate timeseries calculated from 8-day averages vs monthly averages...')
+legend('Monthly','8-day')

@@ -11,8 +11,8 @@ clearvars
 % D0 = dir(fullfile(filedir,'*.hdf'));
 
 % Passport - data holdall
-cd 'E:\Data\NPP\NPP_extracted'
-filebase = 'E:\Data\NPP\NPP_extracted';
+cd 'D:\Data\NPP\NPP_extracted'
+filebase = 'D:\Data\NPP\NPP_extracted';
 D0 = dir(fullfile(filebase,'*.hdf'));
 
 
@@ -34,10 +34,10 @@ cafe_npp_all_8day=NaN*ones(540,2160,length(D0)); %(1080,2160,length(D0));
 % cd ..\Data\cafe                    
 b=struct2cell(D0);
 % read attributes/file info
-    % temp=D0(1,1);
-    % temp=temp.name
-    % temp=hdfinfo(temp)
-    % temp.SDS.Attributes.Name
+%     temp=D0(1,1);
+%     temp=temp.name
+%     temp=hdfinfo(temp)
+%     temp.SDS.Attributes.Name
 
 % update these limits to reflect your region of interest 
     % currently importing whole world
@@ -61,6 +61,7 @@ for iix=1:length(D0)
     scale_factor=cell2mat(hdfread(list,'Slope'));
     offset=cell2mat(hdfread(list,'Intercept'));
     B=hdfread(list,'npp');% import data ** if no scaling equation, and importing whole region, can technically add B straight to "algo"_npp_all
+    B=flipud(B); % 8-day NPP data is upside down...
     C=B(J,K);  % extract region
     %C(find(C==fill))=NaN;  %replace missing value % Pete didn't do this
     %with his, so just leave that for now
@@ -69,8 +70,10 @@ for iix=1:length(D0)
     cafe_npp_all_8day(:,:,iix)=C;
 end
 
+figure; pcolor(cafe_npp_all_8day(:,:,20)); shading flat
+
 fill=cell2mat(hdfread(b{1,1},'Hole Value'))  
-clearvars -except cafe* algo_choice D0 filebase b
+clearvars -except cafe* algo_choice D0 filebase b fill
 % missing data value
 %                    vgpmtest=vgpm_npp_all(:,:,1);
 
@@ -157,6 +160,7 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
             npptp=cafe_npp_all_8day(:,:,ii);
             findneg=find(npptp<0);
             npptp(findneg)=0;
+%             cafe_npp_tot_gC_all(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,2)))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
 
             if ~(time_start_all(ii,2)==12)
                 cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
@@ -173,11 +177,11 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
         fprintf(['Calculate NPP: (of ',num2str(length(D0)),'):  '])
 
         for ii = 1:length(D0)
-            %fprintf_r(' %i', ii);
+            fprintf(' %i', ii);
             npptp=cafe_npp_all_8day(:,:,ii);
             findneg=find(npptp<0);
             npptp(findneg)=NaN;
-%             cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+%             cafe_npp_tot_gC_nans(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
         
             if ~(time_start_all(ii,2)==12)
                 cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
@@ -194,5 +198,5 @@ clear ii npptp findneg
 % cd ..\..\Workspace_variables
 save cafe_8day_imported_recalc -v7.3
 
-        
+ %723 s to run on laptop       
         
