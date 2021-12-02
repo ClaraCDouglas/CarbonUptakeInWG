@@ -1,5 +1,6 @@
 %% Processing data brought in by ImportData_concise.m
-% clearvars
+clearvars
+close all
 
 desktop = 0;
 if desktop
@@ -23,18 +24,18 @@ setup.monthly=false;
 setup.eightday=true;
 %% load data
 
-% for aix = 1:length(algorithm)
-% %     load([algorithm{aix} '_imported.mat'], 'area*','time*',[algorithm{aix} '*']);
-% %     if aix==4
-% %         load([algorithm{aix} '_imported.mat'], 'VGPM*');
-% %     end
-% if setup.monthly
-%      load([algorithm{aix} '_imported.mat']);
-% elseif setup.eightday
-%     load([algorithm{aix} '_8day_imported.mat']);
-% end
-% 
-% end
+for aix = 1:length(algorithm)
+%     load([algorithm{aix} '_imported.mat'], 'area*','time*',[algorithm{aix} '*']);
+%     if aix==4
+%         load([algorithm{aix} '_imported.mat'], 'VGPM*');
+%     end
+if setup.monthly
+     load([algorithm{aix} '_imported.mat']);
+elseif setup.eightday
+    load([algorithm{aix} '_8day_imported_recalc.mat']);
+end
+
+end
 % vgpm_npp_tot_gC_all=VGPM_npp_tot_gC_all;
 % vgpm_npp_tot_gC_nans=VGPM_npp_tot_gC_nans;
 area_MODIScafe_m2=area_MODISvgpm_m2;
@@ -445,16 +446,16 @@ plot(datetime(time_start_all_8day),OceanProd_8day.cafe.Open.NPP_tot_gC)
 %145seconds to run on laptop
 
 figure;
-plot(OceanProd.cafe.Open.NPP_tot_TgC_annual(:,1),OceanProd.cafe.Open.NPP_tot_TgC_annual(:,2))
-hold on
-plot(OceanProd_8day.cafe.Open.NPP_tot_TgC_annual(:,1),OceanProd_8day.cafe.Open.NPP_tot_TgC_annual(:,2))
-
-
+y=[OceanProd.cafe.Open.NPP_tot_TgC_annual(:,2) OceanProd_8day.cafe.Open.NPP_tot_TgC_annual(:,2)];
+bar(OceanProd.cafe.Open.NPP_tot_TgC_annual(:,1),y)
+title('Total NPP per year (Tg C) calculated from 8-day averages vs monthly averages...')
+ylabel('Integrated annual NPP (Tg C yr^-^1)')
+legend('Monthly','8-day')
 
 figure;
-plot(datetime(time_start_all),OceanProd.cafe.Open.NPP_av_mgm2_nans)
+plot(datetime(time_start_all),OceanProd.cafe.Open.NPP_av_mgm2_nans,'LineWidth',2)
 hold on
-plot(datetime(time_start_all_8day),OceanProd_8day.cafe.Open.NPP_av_mgm2_nans)
+plot(datetime(time_start_all_8day),OceanProd_8day.cafe.Open.NPP_av_mgm2_nans,'LineWidth',2)
 ylabel('NPP average daily rate mg m^-^2 day^-^1')
 title('Differences in daily rate timeseries calculated from 8-day averages vs monthly averages...')
 legend('Monthly','8-day')
