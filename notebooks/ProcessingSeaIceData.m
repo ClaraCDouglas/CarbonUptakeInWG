@@ -1,6 +1,6 @@
 %% Processing data brought in by ImportData_concise.m
 clearvars
-desktop = 0;
+desktop = 1;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
@@ -19,16 +19,16 @@ setup.endyear=2020;
 
 %% load data
 % load sea ice data
-cd 'D:\Data\SeaIceNIMBUS';
-load('SeaIce_daily_8day_20022020.mat')
-cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
-load('cafe_8day_imported_recalc.mat', 'time_start_all');
+cd 'E:\Data\SeaIceNIMBUS';
+load('SeaIce_8day_20022020.mat')
+% cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+% load('cafe_8day_imported_recalc.mat', 'time_start_all');
 load('openshelfisobath_clean21.mat')
 load('box_lat_lons.mat', 'andrex_box')
 % time_start_ice8
 % time_end_ice8
 
-time_start_all=time_start_all(1:848,:); % NPP time_start for each 8 day slice ending in 2020
+% time_start_all=time_start_all(1:848,:); % NPP time_start for each 8 day slice ending in 2020
 time_start_ice8=time_start_ice8(24:end,:); %there are more time slices for the sea ice data because the 2nd-4th weeks in Aug 2020 are missing from the NPP dataset
 time_end_ice8=time_end_ice8(24:end,:); %there are more time slices for the sea ice data because the 2nd-4th weeks in Aug 2020 are missing from the NPP dataset
 ice_conc_8day=ice_conc_8day(:,:,24:end); % remove ice data for Jan-June 2002 (no NPP data for that)

@@ -2,7 +2,7 @@
 clearvars
 close all
 
-desktop = 0;
+desktop = 1;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
@@ -38,7 +38,6 @@ end
 end
 % vgpm_npp_tot_gC_all=VGPM_npp_tot_gC_all;
 % vgpm_npp_tot_gC_nans=VGPM_npp_tot_gC_nans;
-area_MODIScafe_m2=area_MODISvgpm_m2;
 clearvars VGPM_npp_tot_gC_nans VGPM_npp_tot_gC_all D0 algo_choice b filebase filedir fill *vgpm*
 if setup.monthly
     timedec=time_start_all(:,1)+(time_start_all(:,2)/12)-1/24;
@@ -52,11 +51,11 @@ load('box_lat_lons.mat', 'andrex_box')
 %% Import regions: shelf and open ocean then andrex box
 % load('latlon_m.mat') 
 
-IN_and=inpolygon(lon_m,lat_m,andrex_box(:,1),andrex_box(:,2));
+IN_and=inpolygon(lon_wg,lat_wg,andrex_box(:,1),andrex_box(:,2));
 findweddell=find(IN_and==1);
-IN_shelf=inpolygon(lon_m,lat_m,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
+IN_shelf=inpolygon(lon_wg,lat_wg,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
 findshelf=find(IN_shelf==1);
-IN_open=inpolygon(lon_m,lat_m,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
+IN_open=inpolygon(lon_wg,lat_wg,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
 findopen=find(IN_open==1);
 
 region_sublist={'Weddell','Shelf','Open'};
@@ -264,11 +263,11 @@ if setup.eightday
             tempNPP=cafe_npp_all_8day(:,:,tix); %using mg m^-2 array for this
             %findNPP=find(tempNPP>=0);
             findNPP2=find(~(tempNPP<0)); % would be even better coding if put ==FillValue
-            NPPmask=zeros(540,2160);
+            NPPmask=zeros(1080,1380);
             NPPmask(findNPP2)=1;
             for rix = 1:length(region_sublist)
                 %box,box logic
-                temp.(region_sublist{rix}).box = lat_m;
+                temp.(region_sublist{rix}).box = lat_wg;
                 temp.(region_sublist{rix}).box(:) = 0;
                 eval(['temp.',region_sublist{rix},'.box(',regionfindlist{rix},')=1;']);
 
@@ -279,7 +278,7 @@ if setup.eightday
                 %             OceanProd.(algorithm{aix}).(region_sublist{rix}).area_month_m2(tix,1)=nansum(nansum((temp.NPPmask).*(temp.area_MODIS).*(temp.(region_sublist{rix}).box)));
                 
                 % where there is ocean * area in m2 * region box. then summed = total area that there is ocean for each 8 day period  
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_m2(tix,1)=sum(sum(NPPmask.*area_MODIScafe_m2.*(temp.(region_sublist{rix}).box),'omitnan'),'omitnan');
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_m2(tix,1)=sum(sum(NPPmask.*area_MODIScafe_m2_wg.*(temp.(region_sublist{rix}).box),'omitnan'),'omitnan');
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_km2=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_m2/1e6;
             end
         end
@@ -287,7 +286,7 @@ if setup.eightday
     %% area of region and sub-region
 
     for rix = 1:length(region_sublist)
-        OceanProd_8day.total_area.(region_sublist{rix})=sum(sum(area_MODIScafe_km2.*(temp.(region_sublist{rix}).box),'omitnan'),'omitnan');
+        OceanProd_8day.total_area.(region_sublist{rix})=sum(sum(area_MODIScafe_km2_wg.*(temp.(region_sublist{rix}).box),'omitnan'),'omitnan');
     end
     OceanProd_8day.total_area.SROOtotal=OceanProd_8day.total_area.Shelf+OceanProd_8day.total_area.Open;
     OceanProd_8day.total_area.SROOtot_WGdiff=OceanProd_8day.total_area.SROOtotal-OceanProd_8day.total_area.Weddell;
@@ -300,7 +299,7 @@ if setup.eightday
         for rix = 1:length(region_sublist)
             for tix=1:length(datenum8day)
                 % Total NPP per 8-day period
-                temp.NPP_tot=ones(540,2160);
+                temp.NPP_tot=ones(1080,1380);
                 eval(['temp.NPP(:,:)=',algorithm{aix},'_npp_tot_gC_nans_8day(:,:,tix);']);
                 % temp.NPP is total NPP in 8 day period (land/ice/clouds=Nan)
                     %summed for pixels within region
@@ -308,7 +307,7 @@ if setup.eightday
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC/1e12;
 
                 % Mean daily rates for each 8-day period
-                temp.NPP_daily=ones(540,2160);
+                temp.NPP_daily=ones(1080,1380);
                 eval(['temp.NPP_daily(:,:)=',algorithm{aix},'_npp_all_8day(:,:,tix);']);
                 temp.findneg=find(temp.NPP_daily<0);
                 temp.NPP_daily(temp.findneg)=NaN;

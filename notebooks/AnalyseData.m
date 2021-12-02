@@ -3,12 +3,12 @@ clearvars regres lmtest
 aix = 4;
 for rix = 1:length(region_sublist)
 
-regres.year=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1);
-regres.icesmall.(region_sublist{1})=OceanProd.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(2:18,2)/1e6;
-regres.icesmall.(region_sublist{3})=OceanProd.(algorithm{aix}).(region_sublist{3}).IceFree_annualMEAN(2:18,2)/1e6;
-regres.icesmall.(region_sublist{2})=OceanProd.(algorithm{aix}).(region_sublist{2}).IceFree_annualMEAN(2:18,2)/1e4;
-regres.ice.(region_sublist{rix})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2);
-regres.NPP.(region_sublist{rix})=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2);
+regres.year=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1);
+regres.icesmall.(region_sublist{1})=OceanProd_8day.(algorithm{aix}).(region_sublist{1}).IceFree_annualMEAN(2:18,2)/1e6;
+regres.icesmall.(region_sublist{3})=OceanProd_8day.(algorithm{aix}).(region_sublist{3}).IceFree_annualMEAN(2:18,2)/1e6;
+regres.icesmall.(region_sublist{2})=OceanProd_8day.(algorithm{aix}).(region_sublist{2}).IceFree_annualMEAN(2:18,2)/1e4;
+regres.ice.(region_sublist{rix})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2);
+regres.NPP.(region_sublist{rix})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2);
 regres.NPP_AW.(region_sublist{rix})=temp.(region_sublist{rix}).NPP_annual_AWrate(:,2)
 
 regres.tbl.(region_sublist{rix})=table(regres.year,regres.ice.(region_sublist{rix}),regres.NPP.(region_sublist{rix}),'VariableNames',{'Year','icefree','NPP'});
@@ -22,9 +22,9 @@ regres.tblAWsmall.(region_sublist{rix})=table(regres.year,regres.icesmall.(regio
 regres.tblAWsmall.(region_sublist{rix})(1:5,:)
 
 
-% regres.tbl.(region_sublist{rix})=table(OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1),...
-%     OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2),...
-%     OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2),'VariableNames',{'Year','NPP','icefree'});
+% regres.tbl.(region_sublist{rix})=table(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1),...
+%     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2),...
+%     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2),'VariableNames',{'Year','NPP','icefree'});
 % regres.tbl.(region_sublist{rix})(1:5,:)
 
 regres.lm.(region_sublist{rix})=fitlm(regres.tbl.(region_sublist{rix}),'NPP~icefree')
@@ -126,21 +126,21 @@ graphical.text2=text(1.4,80, 'R^2=0.54, p<0.001','Color',graphical.opencolor,'In
 aix = 4;
 for rix = 1:length(region_sublist)
 
-regres.year=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1);
-regres.icesmall.(region_sublist{1})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e6;
-regres.icesmall.(region_sublist{3})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e6;
-regres.icesmall.(region_sublist{2})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e4;
-regres.ice.(region_sublist{rix})=OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2);
-regres.NPP.(region_sublist{rix})=OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2);
+regres.year=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1);
+regres.icesmall.(region_sublist{1})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e6;
+regres.icesmall.(region_sublist{3})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e6;
+regres.icesmall.(region_sublist{2})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2)/1e4;
+regres.ice.(region_sublist{rix})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2);
+regres.NPP.(region_sublist{rix})=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2);
 
 regres.tbl2.(region_sublist{rix})=table(regres.year,regres.NPP.(region_sublist{rix}),regres.ice.(region_sublist{rix}),'VariableNames',{'Year','NPP','icefree'});
 regres.tbl2.(region_sublist{rix})(1:5,:)
 regres.tblsmall2.(region_sublist{rix})=table(regres.year,regres.NPP.(region_sublist{rix}),regres.ice.(region_sublist{rix}),'VariableNames',{'Year','NPP','icefree'});
 regres.tblsmall2.(region_sublist{rix})(1:5,:)
 
-% regres.tbl.(region_sublist{rix})=table(OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1),...
-%     OceanProd.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2),...
-%     OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2),'VariableNames',{'Year','NPP','icefree'});
+% regres.tbl.(region_sublist{rix})=table(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,1),...
+%     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(2:18,2),...
+%     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(2:18,2),'VariableNames',{'Year','NPP','icefree'});
 % regres.tbl.(region_sublist{rix})(1:5,:)
 
 regres.lm2.(region_sublist{rix})=fitlm(regres.tbl.(region_sublist{rix}),'icefree~NPP')

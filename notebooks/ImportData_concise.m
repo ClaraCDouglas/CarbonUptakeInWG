@@ -11,8 +11,8 @@ clearvars
 % D0 = dir(fullfile(filedir,'*.hdf'));
 
 % Passport - data holdall
-cd 'D:\Data\NPP\NPP_extracted'
-filebase = 'D:\Data\NPP\NPP_extracted';
+cd 'E:\Data\NPP\NPP_extracted'
+filebase = 'E:\Data\NPP\NPP_extracted';
 D0 = dir(fullfile(filebase,'*.hdf'));
 
 
@@ -29,24 +29,25 @@ D0 = dir(fullfile(filebase,'*.hdf'));
 %% Importing multiple HDF files
     %% NPP 'algo choice' data
 % vgpm_npp_all=NaN*ones(1080,2160,length(D0)); 
-cafe_npp_all_8day=NaN*ones(540,2160,length(D0)); %(1080,2160,length(D0)); 
+cafe_npp_all_8day=NaN*ones(1080,1380,length(D0)); %(1080,2160,length(D0)); 
 
 % cd ..\Data\cafe                    
 b=struct2cell(D0);
-% read attributes/file info
+% check attributes/file info
 %     temp=D0(1,1);
 %     temp=temp.name
 %     temp=hdfinfo(temp)
 %     temp.SDS.Attributes.Name
 
 % update these limits to reflect your region of interest 
-    % currently importing whole world
-latres=linspace(-90,90,1080);
-lonres=linspace(-180,180,2160);
+    % whole world dims
+latres=linspace(90,-90,2160);
+lonres=linspace(-180,180,4320);
+    % set limits
 lat_north=0; % only importing south of equator
 lat_south=-100;
-lon_west=-200;
-lon_east=200;
+lon_west=-75;
+lon_east=40;
 J=find(latres>lat_south & latres<lat_north);
 K=find(lonres>lon_west & lonres<lon_east);
 latC=latres(J);
@@ -61,16 +62,15 @@ for iix=1:length(D0)
     scale_factor=cell2mat(hdfread(list,'Slope'));
     offset=cell2mat(hdfread(list,'Intercept'));
     B=hdfread(list,'npp');% import data ** if no scaling equation, and importing whole region, can technically add B straight to "algo"_npp_all
-    B=flipud(B); % 8-day NPP data is upside down...
     C=B(J,K);  % extract region
     %C(find(C==fill))=NaN;  %replace missing value % Pete didn't do this
     %with his, so just leave that for now
     C=(C*scale_factor)+offset;
 
-    cafe_npp_all_8day(:,:,iix)=C;
+    cafe_npp_all_8day(:,:,iix)=C; %C or B for whole region
 end
 
-figure; pcolor(cafe_npp_all_8day(:,:,20)); shading flat
+% figure; pcolor(cafe_npp_all_8day(:,:,863)); shading flat
 
 fill=cell2mat(hdfread(b{1,1},'Hole Value'))  
 clearvars -except cafe* algo_choice D0 filebase b fill
@@ -100,38 +100,39 @@ end
 
 clear tix list fileinfo attr_infostart attr_infoend
     %% lat/lon data
-        latrownumber=540:1:1079; %0:1:1079;
-        for aix = 1:540 %1080
+        latrownumber=1080:1:2159; %0:1:1079;
+        for aix = 1:1080 %1080
             latrow=latrownumber(aix);
-            spacing=1/6;
+            spacing=1/12;
             latdistance=latrow*spacing;
             latpixelnorthedge(aix,1)=90-latdistance;
-            latpixelsouthedge(aix,1)=latpixelnorthedge(aix,1)-(1/6);
-            latpixelcenter(aix,1)=latpixelnorthedge(aix,1)-(1/12);
+            latpixelsouthedge(aix,1)=latpixelnorthedge(aix,1)-(1/12);
+            latpixelcenter(aix,1)=latpixelnorthedge(aix,1)-(1/24);
         end
         
-        lonrownumber=0:1:2160;
-        for aix = 1:2160
+        lonrownumber=0:1:4320;
+        for aix = 1:4320
             lonrow=lonrownumber(aix);
-            spacing=1/6;
+            spacing=1/12;
             londistance=lonrow*spacing;
             lonpixelwestedge(aix,1)=londistance+-180;
-            lonpixeleastedge(aix,1)=lonpixelwestedge(aix,1)+(1/6);
-            lonpixelcenter(aix,1)=lonpixelwestedge(aix,1)+(1/12);
+            lonpixeleastedge(aix,1)=lonpixelwestedge(aix,1)+(1/12);
+            lonpixelcenter(aix,1)=lonpixelwestedge(aix,1)+(1/24);
         end
         
-lat_m=NaN*ones(540,2160);
-lon_m=NaN*ones(540,2160);
-for ii = 1:2160
+lat_m=NaN*ones(1080,4320);
+lon_m=NaN*ones(1080,4320);
+for ii = 1:4320
     lat_m(:,ii)=latpixelcenter;
 end
-for ii = 1:540
+for ii = 1:1080
     lon_m(ii,:)=lonpixelcenter;
 end
+
     %% Calculate area of boxes
         earthgeoid = almanac('earth','geoid','km','grs80'); % This is from MATLAB Mapping Toolbox
         disp(['...'])
-        area_MODIScafe_km2=NaN*ones(540,2160);
+        area_MODIScafe_km2=NaN*ones(1080,4320);
         
         for aix = 1:length(latpixelnorthedge)
             lat_n=latpixelnorthedge(aix);
@@ -141,14 +142,24 @@ end
             area_MODIScafe_km2(aix,1)=areaint([lat_s,lat_n,lat_n,lat_s,lat_s],[lon_w,lon_w,lon_e,lon_e,lon_w],earthgeoid);
         end
         
-        for ii = 2:2160
+        for ii = 2:1380
             area_MODIScafe_km2(:,ii)=area_MODIScafe_km2(:,1);
         end
         % convert to m^2
-        area_MODISvgpm_m2 = area_MODIScafe_km2 * 1e6;
-        
-clear latrownumber lonrownumber aix earthgeoid spacing latpixelcenter latpixelnorthedge latpixelsouthedge lonpixelwestedge ...
+        area_MODIScafe_m2 = area_MODIScafe_km2 * 1e6;
+
+% reduce to just wg for computing/matlab size
+lon_wg=lon_m(:,1261:2640);
+lat_wg=lat_m(:,1261:2640);
+area_MODIScafe_km2_wg=area_MODIScafe_km2(:,1261:2640);
+area_MODIScafe_m2_wg=area_MODIScafe_m2(:,1261:2640);
+clearvars latrownumber lonrownumber aix earthgeoid spacing latpixelcenter latpixelnorthedge latpixelsouthedge lonpixelwestedge ...
 lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistance latdistance
+clearvars area_MODIScafe_m2 area_MODIScafe_km2 lon_m lat_m
+
+%% sanity check
+
+figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
 
     %% Calculate total npp for month in gC
         cafe_npp_tot_gC_all_8day = cafe_npp_all_8day;
@@ -163,9 +174,9 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
 %             cafe_npp_tot_gC_all(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
 
             if ~(time_start_all(ii,2)==12)
-                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2_wg.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
             elseif time_start_all(ii,2)==12
-                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2_wg.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
             else
                 error('ERROR in total NPP per 8 day calc')
             end
@@ -184,9 +195,9 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
 %             cafe_npp_tot_gC_nans(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
         
             if ~(time_start_all(ii,2)==12)
-                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODIScafe_m2_wg.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
             elseif time_start_all(ii,2)==12
-                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODIScafe_m2_wg.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
             else
                 error('ERROR in total NPP per 8 day calc with NaNs')
             end
@@ -196,7 +207,7 @@ lonpixeleastedge latrow lonpixelcenter lonrow lat_n lat_s lon_w lon_e londistanc
 clear ii npptp findneg
 %% Save variables
 % cd ..\..\Workspace_variables
-save cafe_8day_imported_recalc -v7.3
+save cafe_8day_imported_eqWG_withNaNs -v7.3
 
  %723 s to run on laptop       
         
