@@ -7,6 +7,7 @@ cd 'E:\Data\SeaIceNIMBUS\SeaIceMonths';
 a=dir('*.bin'); % list the filenames beginning with 'dt'
 b=struct2cell(a);
 
+%% monthly data
 for n=1:length(a)
     disp(n)
     list=b{1,n};
@@ -73,6 +74,8 @@ clearvars list a b n temp_ice header
 
 cd 'E:\Data\SeaIceNIMBUS';
 save SeaIce_daily_20022020.mat
+
+
 
 %% 8-day averages
 % blank final variables to concatonate into
