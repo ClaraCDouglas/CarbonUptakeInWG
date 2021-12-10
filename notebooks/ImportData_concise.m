@@ -142,7 +142,7 @@ end
             area_MODIScafe_km2(aix,1)=areaint([lat_s,lat_n,lat_n,lat_s,lat_s],[lon_w,lon_w,lon_e,lon_e,lon_w],earthgeoid);
         end
         
-        for ii = 2:1380
+        for ii = 2:4320
             area_MODIScafe_km2(:,ii)=area_MODIScafe_km2(:,1);
         end
         % convert to m^2

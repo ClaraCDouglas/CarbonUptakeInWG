@@ -25,16 +25,23 @@ setup.eightday=true;
 %% load data
 
 for aix = 1:length(algorithm)
-%     load([algorithm{aix} '_imported.mat'], 'area*','time*',[algorithm{aix} '*']);
-%     if aix==4
-%         load([algorithm{aix} '_imported.mat'], 'VGPM*');
-%     end
-if setup.monthly
-     load([algorithm{aix} '_imported.mat']);
-elseif setup.eightday
-    load([algorithm{aix} '_8day_imported_recalc.mat']);
-end
-
+    %     load([algorithm{aix} '_imported.mat'], 'area*','time*',[algorithm{aix} '*']);
+    %     if aix==4
+    %         load([algorithm{aix} '_imported.mat'], 'VGPM*');
+    %     end
+    if setup.monthly
+        load([algorithm{aix} '_imported.mat']);
+    elseif setup.eightday
+        if desktop
+            cd 'E:\Data\NPP\NPP_extracted'
+            load('cafe_8day_imported_eqWG_withNaNs.mat')
+            cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+        elseif laptop
+            cd 'D:\Data\NPP\NPP_extracted'
+            load('cafe_8day_imported_eqWG_withNaNs.mat')
+            cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+        end
+    end
 end
 % vgpm_npp_tot_gC_all=VGPM_npp_tot_gC_all;
 % vgpm_npp_tot_gC_nans=VGPM_npp_tot_gC_nans;
@@ -42,12 +49,28 @@ clearvars VGPM_npp_tot_gC_nans VGPM_npp_tot_gC_all D0 algo_choice b filebase fil
 if setup.monthly
     timedec=time_start_all(:,1)+(time_start_all(:,2)/12)-1/24;
 elseif setup.eightday
-    datenum8day=datenum(time_start_all);
+%     datenum8day=datenum(time_start_all);
+    timedec8day=decyear(time_start_all);
 end
 load('openshelfisobath_clean21.mat')
 load('box_lat_lons.mat', 'andrex_box')
 
 
+% NEED TO RECALC AREA VARIABLES AND TOT_NANS variable
+
+%% Check data region
+if setup.checkregions
+    figure;
+    pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,1)); shading flat; caxis([0 400]); colorbar;
+    figure;
+    pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,10)); shading flat; caxis([0 400]); colorbar;
+    figure;
+    pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,30)); shading flat; caxis([0 600]); colorbar;
+    hold on
+    SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',5)%'#80471C'
+    O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',3.5)%,'LineStyle','--')
+
+end
 %% Import regions: shelf and open ocean then andrex box
 % load('latlon_m.mat') 
 
@@ -64,20 +87,24 @@ regionfindlist= {'findweddell','findshelf','findopen'};
 if setup.checkregions
     % % To check regions are within the same place
     for rix = 1:length(region_sublist)
-        eval(['box_check.',region_sublist{rix},'=lat_m;']);
+        eval(['box_check.',region_sublist{rix},'=lat_wg;']);
         eval(['box_check.',region_sublist{rix},'(:)=0;']);
         eval(['box_check.',region_sublist{rix},'(',regionfindlist{rix},')=1;']);
         eval(['box_logic_check.',region_sublist{rix},'=logical(box_check.',region_sublist{rix},');']);
     end
     figure;
-    pcolor(lon_m,lat_m,box_check.Weddell);
+    pcolor(lon_wg,lat_wg,box_check.Weddell);
     shading flat
     figure;
-    pcolor(lon_m,lat_m,box_check.Shelf);
+    pcolor(lon_wg,lat_wg,box_check.Shelf);
     shading flat
     figure;
-    pcolor(lon_m,lat_m,box_check.Open);
+    pcolor(lon_wg,lat_wg,box_check.Open);
     shading flat
+    hold on
+    SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',5)%'#80471C'
+    O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',3.5)%,'LineStyle','--')
+
     % they look correct now! Phew!!
 end
 
@@ -258,13 +285,13 @@ if setup.eightday
     %%  loop for box,box logic, area calcs
     % (varible area of open ice-free water calculated)
     for aix = 1:length(algorithm)
-        for tix=1:length(datenum8day)
+        for tix=1:length(timedec8day)
             % make mask for ocean/area where NPP is recorded
             tempNPP=cafe_npp_all_8day(:,:,tix); %using mg m^-2 array for this
-            %findNPP=find(tempNPP>=0);
-            findNPP2=find(~(tempNPP<0)); % would be even better coding if put ==FillValue
+            findNPP=find(tempNPP>=0);
+            %findNPP2=find(~(tempNPP<0)); % would be even better coding if put ==FillValue
             NPPmask=zeros(1080,1380);
-            NPPmask(findNPP2)=1;
+            NPPmask(findNPP)=1;
             for rix = 1:length(region_sublist)
                 %box,box logic
                 temp.(region_sublist{rix}).box = lat_wg;
@@ -290,17 +317,19 @@ if setup.eightday
     end
     OceanProd_8day.total_area.SROOtotal=OceanProd_8day.total_area.Shelf+OceanProd_8day.total_area.Open;
     OceanProd_8day.total_area.SROOtot_WGdiff=OceanProd_8day.total_area.SROOtotal-OceanProd_8day.total_area.Weddell;
-    clear IN_and IN_shelf IN_open tempNPP findNPP* NPPmask regionfindlist findweddell findshelf findopen
+%     clear IN_and IN_shelf IN_open tempNPP findNPP* NPPmask regionfindlist findweddell findshelf findopen
 
     %% Calculating variables
 
     % NPP 8-day timeseries
     for aix = 1:length(algorithm)
         for rix = 1:length(region_sublist)
-            for tix=1:length(datenum8day)
+            for tix=1:length(timedec8day)
                 % Total NPP per 8-day period
                 temp.NPP_tot=ones(1080,1380);
                 eval(['temp.NPP(:,:)=',algorithm{aix},'_npp_tot_gC_nans_8day(:,:,tix);']);
+%                 temp.NPP=cafe_npp_all_8day(:,:,tix); %using mg m^-2 array for this
+
                 % temp.NPP is total NPP in 8 day period (land/ice/clouds=Nan)
                     %summed for pixels within region
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_gC(tix,1)=sum(sum(temp.NPP(temp.(region_sublist{rix}).box_logic),'omitnan'),'omitnan');
@@ -361,9 +390,10 @@ if setup.eightday
     for aix = 1:length(algorithm)
         for rix = 1:length(region_sublist)
             for yix = 2002:2020
-                findyear1=find(time_start_all(:,1)==yix-1 & time_start_all(:,2)>=7);
-                findyear2=find(time_start_all(:,1)==yix & time_start_all(:,2)<=6);
-                findyear=cat(1,findyear1,findyear2);
+                findyear=find(timedec8day>yix-0.5 & timedec8day<yix+0.5);
+                    %findyear1=find(time_start_all(:,1)==yix-1 & time_start_all(:,2)>=7);
+                    %findyear2=find(time_start_all(:,1)==yix & time_start_all(:,2)<=6);
+                    %findyear=cat(1,findyear1,findyear2);
                 % Integrated NPP over austral year (June to June)
                 % and total and mean annual open ice-free water area and max monthly
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,1)=yix;
@@ -390,7 +420,7 @@ if setup.eightday
                 else
                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC_annual(yix-2001,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_tot_TgC(findyear,1));
                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)=sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_km2(findyear));
-                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)/12;
+                    OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMEAN(yix-2001,2)=OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualTOT(yix-2001,2)/46;
                     OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).IceFree_annualMAX(yix-2001,2)=max(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).area_8day_km2(findyear,1),[],'omitnan');
 
                     %                  OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_rates_fromdaily(yix-2002,2)=nansum(OceanProd.(algorithm{aix}).(region_sublist{rix}).NPP_mgm2_month(findyear));
@@ -458,3 +488,5 @@ plot(datetime(time_start_all_8day),OceanProd_8day.cafe.Open.NPP_av_mgm2_nans,'Li
 ylabel('NPP average daily rate mg m^-^2 day^-^1')
 title('Differences in daily rate timeseries calculated from 8-day averages vs monthly averages...')
 legend('Monthly','8-day')
+
+close all

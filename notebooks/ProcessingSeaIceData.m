@@ -1,6 +1,6 @@
 %% Processing data brought in by ImportData_concise.m
 clearvars
-desktop = 0;
+desktop = 1;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
@@ -41,6 +41,8 @@ ice_conc_8day(:,:,834:836)=[];
 datenum8day=datenum(time_start_ice8);
 clearvars time_start_all
 
+timedec8dayice=decyear(time_start_ice8);
+
 %% Import regions: shelf and open ocean then andrex box
 
 IN_and=inpolygon(g_lon,g_lat,andrex_box(:,1),andrex_box(:,2));
@@ -79,7 +81,7 @@ if setup.checkregions
     latlim = [-90 -50];
     lonlim = [-100 170];
     worldmap(latlim,lonlim)
-    geoshow(antarctica)
+%     geoshow(antarctica)
     hold on
     pcolorm(g_lat,g_lon,ice_conc_8day(:,:,1))
     title('July 4th-11th 2002 Sea ice concentration')
@@ -340,6 +342,35 @@ cmap = colormap(linecolors_grey);
 ticks=[0.03125:0.125:0.96875];
 colorbar('Ticks',[0.03125:0.055:0.96875],'TickLabels',{'2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'})
 
+%% Ice free waters
+% quick compare of SIA and SIE
+figure;
+plot(timedec8dayice,SeaIce.Weddell.ice_free_area,'LineWidth',2)
+title('Weddell: Annual mean ice-free water - calculated from SIA and SIE and NPP data','FontSize',14)
+hold on
+plot(timedec8dayice,SeaIce.Weddell.IceFree_Extent,'LineWidth',2)
+plot(timedec8day,OceanProd_8day.cafe.Weddell.area_8day_km2,'LineWidth',2)
+legend('SIA','SIE','NPP ice-free')
+xlim([2002.8 2020.2])
+ylabel('Ice free waters (km^2)','FontSize',14)
+set(gca,'FontSize',14,'XMinorGrid','on')
+
+SIEvNPP=SeaIce.Weddell.IceFree_Extent(1:848)-OceanProd_8day.cafe.Weddell.area_8day_km2(1:848);
+SIAvNPP=SeaIce.Weddell.ice_free_area(1:848)-OceanProd_8day.cafe.Weddell.area_8day_km2(1:848);
+SIAvSIE=SeaIce.Weddell.ice_free_area(1:848)-SeaIce.Weddell.IceFree_Extent(1:848);
+
+figure;
+plot(timedec8dayice,SIAvSIE,'LineWidth',2)
+title('Weddell: Annual mean ice-free water - calculated from SIA and SIE and NPP data','FontSize',14)
+hold on
+plot(timedec8dayice,SIAvNPP,'LineWidth',2)
+plot(timedec8dayice,SIEvNPP,'LineWidth',2)
+legend('SIA','SIE','NPP ice-free')
+xlim([2002.8 2020.2])
+ylabel('Ice free waters (km^2)','FontSize',14)
+set(gca,'FontSize',14,'XMinorGrid','on')
+ylim([0 inf])
+
 %% Mean ice-free water per austral year
 %SeaIce.Weddell.ice_free_area
 %SeaIce.Weddell.IceFree_Extent
@@ -367,11 +398,12 @@ figure;
 % t=tiledlayout(3,1)
 % ax1 = nexttile;
 bar(SeaIce.Weddell.meanIceFreeArea(:,1),SeaIce.Weddell.meanIceFreeArea(:,2))
-txt=[{'Weddell: Annual mean ice-free water - calculated from SIA and SIE'};{'note, flipped colors from timeseries'}];
+txt=[{'Weddell: Annual mean ice-free water - calculated from SIA and SIE and NPP ice-free'};{'note, flipped colors from timeseries'}];
 title(txt)
 hold on
 bar(SeaIce.Weddell.meanIceFreeExtent(:,1),SeaIce.Weddell.meanIceFreeExtent(:,2))
-legend('SIA','SIE')
+bar(OceanProd_8day.cafe.Weddell.IceFree_annualMEAN(:,1),OceanProd_8day.cafe.Weddell.IceFree_annualMEAN(:,2))
+legend('SIA','SIE','NPP Ice-Free')
 % ax2=nexttile;
 % bar(SeaIce.Shelf.meanIceFreeArea(:,1),SeaIce.Shelf.meanIceFreeArea(:,2))
 % title('Shelf')
