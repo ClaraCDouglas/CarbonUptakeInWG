@@ -76,7 +76,7 @@ target/
 .ipynb_checkpoints/
 
 # exclude data from source control by default
-data/processed/*imported.mat
+data/processed/*imported*.mat
 data/processed/SeaIce_daily_8day_20022020.mat
 data/raw/
 data/interim/
