@@ -1,5 +1,7 @@
 %% Load data or calculate from scratch
 clearvars
+desktop = 1;
+laptop=0;
 % Select algorithm:
 %     algo_choice = 'cbpm'; %not so good
 %     algo_choice = 'vbpm'; % best?
@@ -11,8 +13,13 @@ clearvars
 % D0 = dir(fullfile(filedir,'*.hdf'));
 
 % Passport - data holdall
-cd 'E:\Data\NPP\NPP_extracted'
-filebase = 'E:\Data\NPP\NPP_extracted';
+if laptop
+    cd 'E:\Data\NPP\NPP_extracted'
+    filebase = 'E:\Data\NPP\NPP_extracted';
+elseif desktop
+    cd 'F:\Data\NPP\NPP_extracted'
+    filebase = 'E:\Data\NPP\NPP_extracted';
+end
 D0 = dir(fullfile(filebase,'*.hdf'));
 
 
@@ -161,7 +168,7 @@ clearvars area_MODIScafe_m2 area_MODIScafe_km2 lon_m lat_m
 
 figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
 
-    %% Calculate total npp for month in gC
+    %% Calculate total npp for 8 day period in gC
         cafe_npp_tot_gC_all_8day = cafe_npp_all_8day;
         cafe_npp_tot_gC_all_8day(:)=NaN;
         fprintf(['Calculate NPP: (of ',num2str(length(D0)),'):  '])
@@ -182,7 +189,7 @@ figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
             end
         end
 
-    %% Calculate npp for month in gC - WITH NANS
+    %% Calculate npp for 8 day period in gC - WITH NANS
         cafe_npp_tot_gC_nans_8day = cafe_npp_all_8day;
         cafe_npp_tot_gC_nans_8day(:)=NaN;
         fprintf(['Calculate NPP: (of ',num2str(length(D0)),'):  '])
@@ -205,6 +212,11 @@ figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
 
         end
 clear ii npptp findneg
+
+%% sanity check
+
+figure; pcolor(lon_wg,lat_wg,cafe_npp_tot_gC_nans_8day(:,:,843)); shading flat
+
 %% Save variables
 % cd ..\..\Workspace_variables
 save cafe_8day_imported_eqWG_withNaNs -v7.3
