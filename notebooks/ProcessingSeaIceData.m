@@ -12,15 +12,16 @@ else
     addpath(genpath('C:\Users\ccd1n18\Documents\Projects\SetCMap'));
 end
 
-setup.checkregions=false;
-setup.plotfigures=false;
+setup.checkregions=true;
+setup.plotfigures=true;
 setup.startyear=2002;
 setup.endyear=2020;
 
 %% load data
 % load sea ice data
-cd 'E:\Data\SeaIceNIMBUS';
-load('SeaIce_8day_20022020.mat')
+% SeaIce_daily_20022020.mat, SeaIce_8day_20022020.mat
+cd 'F:\Data\SeaIceNIMBUS';
+load('SeaIce_8day_20022020.mat') %SeaIce_daily_20022020.mat
 % cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 % load('cafe_8day_imported_recalc.mat', 'time_start_all');
 load('openshelfisobath_clean21.mat')
@@ -38,10 +39,12 @@ time_start_ice8(834:836,:)=[];
 time_end_ice8(834:836,:)=[];
 ice_conc_8day(:,:,834:836)=[];
 
-datenum8day=datenum(time_start_ice8);
+timedec8dayice_start=decyear(time_start_ice8);
+timedec8dayice_end=decyear(time_end_ice8);
+timedec8dayice=mean([timedec8dayice_start,timedec8dayice_end],2);
+% datenum8day=datenum(time_start_ice8);
 clearvars time_start_all
 
-timedec8dayice=decyear(time_start_ice8);
 
 %% Import regions: shelf and open ocean then andrex box
 
@@ -80,7 +83,10 @@ if setup.checkregions
     ax1 = nexttile;
     latlim = [-90 -50];
     lonlim = [-100 170];
+    antarctica = shaperead('landareas.shp', 'UseGeoCoords', true,...
+  'Selector',{@(name) strcmp(name,'Antarctica'), 'Name'});
     worldmap(latlim,lonlim)
+%     patchm(antarctica.Lat, antarctica.Lon, [0.5 1 0.5])
 %     geoshow(antarctica)
     hold on
     pcolorm(g_lat,g_lon,ice_conc_8day(:,:,1))
@@ -95,6 +101,21 @@ if setup.checkregions
     title('ANDREX box')
 end
 
+%% Test extent calculation
+% test run to get area of ice free (<15% ice concentration) in regions
+testice=ice_conc_8day(:,:,1);
+testicewed=testice(findweddell);
+icefree=find(testicewed<=0.15);
+icefreearea=sum(g_area(icefree))
+
+% for rix = 1:length(region_sublist)
+%     for tix=1:length(time_start_ice8)
+%        tempice=ice_conc_8day(:,:,tix);
+%        tempice_reg=tempice(find(regionfindlist{rix}));
+%        icefreefind=find(tempice_reg<=0.1);
+%        SeaIce.region_sublist{rix}.IceFreeArea(tix,1)=sum(g_area(icefreefind));
+%     end
+% end
 %% Extract sea ice data for study region
     % % % % NSIDC defines ice extent/ ice cover by <15% sea ice
         % concentration (by looking at plots on
@@ -108,26 +129,26 @@ end
 icewed=testice.*box_logic_check.Weddell;
 icenotwg=find(box_logic_check.Weddell==0);
 icewed(icenotwg)=NaN;
-
+if setup.checkregions
     figure;
-        t=tiledlayout(1,2)
+    t=tiledlayout(1,2)
     ax1 = nexttile;
-
     latlim = [-90 -50];
     lonlim = [-100 170];
     worldmap(latlim,lonlim)
     geoshow(antarctica)
     hold on
-    pcolorm(g_lat,g_lon,ice_conc_8day(:,:,10))
-
+    pcolorm(g_lat,g_lon,ice_conc_8day(:,:,1))
     ax2 = nexttile;
-
     latlim = [-90 -50];
     lonlim = [-100 170];
     worldmap(latlim,lonlim)
     geoshow(antarctica)
     hold on
     pcolorm(g_lat,g_lon,icewed)
+end
+
+clearvars testice* icefree*
 
 %% Area of WG, SR, OO based on sea ice grid
 SeaIce.g_area.Weddell=sum(g_area(findweddell));
@@ -135,23 +156,7 @@ SeaIce.g_area.Weddell=sum(g_area(findweddell));
 SeaIce.g_area.Shelf=sum(g_area(findshelf));
 SeaIce.g_area.Open=sum(g_area(findopen));
 SeaIce.g_area.OOSRtot=SeaIce.g_area.Open+SeaIce.g_area.Shelf; % same same
-
-%% Test extent calculation
-% test run to get area of ice free (<15% ice concentration) in regions
-testice=ice_conc_8day(:,:,1);
-testicewed=testice(findweddell);
-icefree=find(testicewed<=0.15);
-icefreearea=sum(g_area(icefree))
-clearvars testice* icefree*
-
-% for rix = 1:length(region_sublist)
-%     for tix=1:length(time_start_ice8)
-%        tempice=ice_conc_8day(:,:,tix);
-%        tempice_reg=tempice(find(regionfindlist{rix}));
-%        icefreefind=find(tempice_reg<=0.1);
-%        SeaIce.region_sublist{rix}.IceFreeArea(tix,1)=sum(g_area(icefreefind));
-%     end
-% end
+SeaIce.g_area.Weddell-SeaIce.g_area.OOSRtot
 
 %% Sea Ice Extent 
     %(area of ice-covered i.e. total area of pixels that have >15% sea ice concentration)
@@ -194,23 +199,24 @@ title('Shelf')
 ax3=nexttile;
 plot(datetime(time_start_ice8),SeaIce.Open.SIExtent,'LineWidth',2)
 title('Open')
-title(t,'Extent of ice free water (km^2)')
+title(t,'Sea Ice Extent (km^2)')
 
 % timeseries superimposed over JASONDJFMAMJ
     % get data arranged in austral years
 yearrange0320=yearrange(2:end,:);
 x_months= {'J','A','S','O','N','D','J','F','M','A','M','J'};
 temptime=datenum(time_start_ice8);
-for yix = 1:length(yearrange0320)
-    year=yearrange0320(yix)
-    findyear1=find(time_start_ice8(:,1)==year-1 & time_start_ice8(:,2)>=7);
-    findyear2=find(time_start_ice8(:,1)==year & time_start_ice8(:,2)<=6);
-    findyearaus=cat(1,findyear1,findyear2);
-    
+for yix = 2003:2020
+    findyearaus=find(timedec8dayice>yix-0.5 & timedec8dayice<yix+0.5);
+    year = yix;
+    % for yix = 1:length(yearrange0320) % worse coding
+    %     year=yearrange0320(yix)
+    %     findyear1=find(time_start_ice8(:,1)==year-1 & time_start_ice8(:,2)>=7);
+    %     findyear2=find(time_start_ice8(:,1)==year & time_start_ice8(:,2)<=6);
+    %     findyearaus=cat(1,findyear1,findyear2);
     SeaIce.Weddell.SIExtent_aus(:,year-2002)=SeaIce.Weddell.SIExtent(findyearaus);
     SeaIce.Shelf.SIExtent_aus(:,year-2002)=SeaIce.Shelf.SIExtent(findyearaus);
     SeaIce.Open.SIExtent_aus(:,year-2002)=SeaIce.Open.SIExtent(findyearaus);
-    
 end 
 SeaIce.Weddell.austral_meanmonth=mean(SeaIce.Weddell.SIExtent_aus,2);
     % get time for x-axis
@@ -297,17 +303,21 @@ set(gca,'FontSize',14,'XMinorGrid','on')
 
 % timeseries superimposed over JASONDJFMAMJ
     % get data arranged in austral years
-for yix = 1:length(yearrange0320)
-    year=yearrange0320(yix)
-    findyear1=find(time_start_ice8(:,1)==year-1 & time_start_ice8(:,2)>=7);
-    findyear2=find(time_start_ice8(:,1)==year & time_start_ice8(:,2)<=6);
-    findyearaus=cat(1,findyear1,findyear2);
-    
+for yix = 2003:2020
+    findyearaus=find(timedec8dayice>yix-0.5 & timedec8dayice<yix+0.5);
+    year = yix;
+    % for yix = 1:length(yearrange0320) % worse coding
+    %     year=yearrange0320(yix)
+    %     findyear1=find(time_start_ice8(:,1)==year-1 & time_start_ice8(:,2)>=7);
+    %     findyear2=find(time_start_ice8(:,1)==year & time_start_ice8(:,2)<=6);
+    %     findyearaus=cat(1,findyear1,findyear2);
     SeaIce.Weddell.SIArea_aus(:,year-2002)=SeaIce.Weddell.ice_covered_area(findyearaus);
-%     SeaIce.Shelf.SIArea_aus(:,year-2002)=SeaIce.Shelf.ice_covered_area(findyearaus);
-%     SeaIce.Open.SIArea_aus(:,year-2002)=SeaIce.Open.ice_covered_area(findyearaus);
+    SeaIce.Shelf.SIArea_aus(:,year-2002)=SeaIce.Shelf.ice_covered_area(findyearaus);
+    SeaIce.Open.SIArea_aus(:,year-2002)=SeaIce.Open.ice_covered_area(findyearaus);
 end 
 SeaIce.Weddell.SIArea_aus_meanmonth=mean(SeaIce.Weddell.SIArea_aus,2);
+SeaIce.Shelf.SIArea_aus_meanmonth=mean(SeaIce.Shelf.SIArea_aus,2);
+SeaIce.Open.SIArea_aus_meanmonth=mean(SeaIce.Open.SIArea_aus,2);
 
     % with most lines grey
 linecolors_grey=linecolors;
@@ -391,8 +401,6 @@ for rix = 1%:length(region_sublist)
         end
     end
 end
-
-
 
 figure;
 % t=tiledlayout(3,1)
