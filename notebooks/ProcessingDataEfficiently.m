@@ -2,8 +2,8 @@
 clearvars
 close all
 
-desktop = 1;
-laptop=0;
+desktop = 0;
+laptop=1;
 if desktop
     addpath(genpath('C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg'))
     cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
@@ -546,9 +546,7 @@ end
     end
 
     %     clearvars regionfindlist findweddell findshelf findopen temp setup
-
-    %     save('ProcessedData_8day.mat','OceanProd','algorithm','region_sublist','timedec');
-
+         save('ProcessedData_8day_Jan22.mat','OceanProd_8day','algorithm','region_sublist','timedec8day');
          clearvars -except OceanProd* algorithm region_sublist time* cafe_npp_all time* lat_* lon_* andrex_box
     %% calculate NPP per m2 per day per year...
     % either: average daily rate per month (NPP_av_mgm2) for each year
