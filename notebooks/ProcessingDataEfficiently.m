@@ -311,8 +311,8 @@ if setup.checkregions
 end
 clearvars SR_line O_line
 %% Import regions: shelf and open ocean then andrex box
-%BoxIn=andrex_box;
-BoxIn=[-55,-55,-30,-30;-45,-38,-38,-45]';
+BoxIn=andrex_box;
+%BoxIn=[-55,-55,-30,-30;-45,-38,-38,-45]';
 IN_and=inpolygon(lon_wg,lat_wg,BoxIn(:,1),BoxIn(:,2));
 findweddell=find(IN_and==1);
 IN_shelf=inpolygon(lon_wg,lat_wg,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));

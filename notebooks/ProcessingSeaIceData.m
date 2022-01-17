@@ -584,8 +584,21 @@ title('Weddell Gyre Sea Ice Area from 8-day means','FontSize',14)
 cmap = colormap(linecolors_grey);
 ticks=[0.03125:0.125:0.96875];
 colorbar('Ticks',[0.03125:0.055:0.96875],'TickLabels',{'2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'})
-end
 
+% clearvars -except data* SeaIce time* yearrange*
+
+desktop=0;
+laptop=1;
+if desktop
+    cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+elseif laptop
+    cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+end
+clearvars desktop laptop
+save('SeaIceDaily_Jan22.mat','SeaIce','time_start_allice','timedec_allice','yearrange','yearrange0320','data_8day','data_daily');
+
+end
+clearvars ans antarctica ax* box* *ix filenames *find* t temp* IN* icenotwg icewed
 %% Ice free waters
 % quick compare of SIA and SIE
 figure;
