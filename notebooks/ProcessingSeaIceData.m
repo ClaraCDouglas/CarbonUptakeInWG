@@ -12,8 +12,8 @@ else
     addpath(genpath('C:\Users\ccd1n18\Documents\Projects\SetCMap'));
 end
 
-setup.checkregions=true;
-setup.plotfigures=true;
+setup.checkregions=false;
+setup.plotfigures=false;
 setup.startyear=2002;
 setup.endyear=2020;
 data_daily=true;
@@ -31,6 +31,7 @@ end
 % cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 % load('cafe_8day_imported_recalc.mat', 'time_start_all');
 load('openshelfisobath_clean21.mat')
+% load('WAPSHelfOpenJan22.mat')
 load('box_lat_lons.mat', 'andrex_box')
 % time_start_ice8
 % time_end_ice8
@@ -69,15 +70,22 @@ end
 
 %% Import regions: shelf and open ocean then andrex box
 
-IN_and=inpolygon(g_lon,g_lat,andrex_box(:,1),andrex_box(:,2));
+BoxIn=andrex_box;
+%BoxIn=[-55,-55,-30,-30;-45,-38,-38,-45]';
+ShelfBox=shelf_region_ANDbox;%%ShelfMinusWAPJan22
+OOBox=open_ocean_ANDbox;%%OpenOceanMinusWAPJan22
+%WAPBox=WAPJan22;
+IN_and=inpolygon(g_lon,g_lat,BoxIn(:,1),BoxIn(:,2));
 findweddell=find(IN_and==1);
-IN_shelf=inpolygon(g_lon,g_lat,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
+IN_shelf=inpolygon(g_lon,g_lat,ShelfBox(:,1),ShelfBox(:,2));
 findshelf=find(IN_shelf==1);
-IN_open=inpolygon(g_lon,g_lat,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
+IN_open=inpolygon(g_lon,g_lat,OOBox(:,1),OOBox(:,2));
 findopen=find(IN_open==1);
+% IN_wap=inpolygon(g_lon,g_lat,WAPBox(:,1),WAPBox(:,2));
+% findWAP=find(IN_wap==1);
 
-region_sublist={'Weddell','Shelf','Open'};
-regionfindlist= {'findweddell','findshelf','findopen'};
+region_sublist={'Weddell','Shelf','Open'}; %,'WAP'
+regionfindlist= {'findweddell','findshelf','findopen'}; %,'findWAP'
 
 if setup.checkregions
     % % To check regions are within the same place
@@ -155,10 +163,10 @@ icefreearea=sum(g_area(icefree))
         % prev days.
 
 % plot S. Pole ice cover vs selected region
-icewed=testice.*box_logic_check.Weddell;
-icenotwg=find(box_logic_check.Weddell==0);
-icewed(icenotwg)=NaN;
 if setup.checkregions
+    icewed=testice.*box_logic_check.Weddell;
+    icenotwg=find(box_logic_check.Weddell==0);
+    icewed(icenotwg)=NaN;
     figure;
     t=tiledlayout(1,2)
     ax1 = nexttile;
@@ -188,6 +196,7 @@ SeaIce.g_area.Weddell=sum(g_area(findweddell));
 % SeaIce.g_area.Weddell2=sum(sum(g_area.*box_logic_check.Weddell)); %same same
 SeaIce.g_area.Shelf=sum(g_area(findshelf));
 SeaIce.g_area.Open=sum(g_area(findopen));
+% SeaIce.g_area.WAP=sum(g_area(findWAP));
 SeaIce.g_area.OOSRtot=SeaIce.g_area.Open+SeaIce.g_area.Shelf; % same same
 SeaIce.g_area.Weddell-SeaIce.g_area.OOSRtot
 
@@ -595,7 +604,7 @@ elseif laptop
     cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 end
 clearvars desktop laptop
-save('SeaIceDaily_Jan22.mat','SeaIce','time_start_allice','timedec_allice','yearrange','yearrange0320','data_8day','data_daily');
+save('SeaIceDaily_Jan22.mat','SeaIce','time_start_allice','timedec_allice','yearrange','yearrange0320','data_8day','data_daily'); %SeaIceDaily_Jan22_wWAP
 
 end
 clearvars ans antarctica ax* box* *ix filenames *find* t temp* IN* icenotwg icewed

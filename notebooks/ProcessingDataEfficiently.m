@@ -18,7 +18,7 @@ end
 %algorithm={'cafe','cbpm','eppley','vgpm'};
 algorithm={'cafe'};
 setup.checkregions=true;
-setup.plotfigures=false;
+setup.plotfigures=true;
 setup.startyear=2002;
 setup.endyear=2020;
 setup.monthly=false;
@@ -62,7 +62,8 @@ if setup.eightday
     timedec8day=decyear(time_start_all);
     timedec8day_end=decyear(time_end_all);
 end
-load('openshelfisobath_clean21.mat')
+% load('openshelfisobath_clean21.mat')
+load('WAPSHelfOpenJan22.mat')
 load('box_lat_lons.mat', 'andrex_box')
 desktop = 1;
 laptop=0;
@@ -299,6 +300,9 @@ end
 if setup.eightday
 %% Check data region
 if setup.checkregions
+    ShelfBox=ShelfMinusWAPJan22;%shelf_region_ANDbox
+    OOBox=OpenOceanMinusWAPJan22;%open_ocean_ANDbox
+    WAPBox=WAPJan22;
     figure;
     pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,1)); shading flat; caxis([0 400]); colorbar;
     figure;
@@ -306,22 +310,28 @@ if setup.checkregions
     figure;
     pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,30)); shading flat; caxis([0 600]); colorbar;
     hold on
-    SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
-    O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+    SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+    O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+    WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2)%,'LineStyle','--')
 end
 clearvars SR_line O_line
 %% Import regions: shelf and open ocean then andrex box
 BoxIn=andrex_box;
 %BoxIn=[-55,-55,-30,-30;-45,-38,-38,-45]';
+ShelfBox=ShelfMinusWAPJan22;%shelf_region_ANDbox
+OOBox=OpenOceanMinusWAPJan22;%open_ocean_ANDbox
+WAPBox=WAPJan22;
 IN_and=inpolygon(lon_wg,lat_wg,BoxIn(:,1),BoxIn(:,2));
 findweddell=find(IN_and==1);
-IN_shelf=inpolygon(lon_wg,lat_wg,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
+IN_shelf=inpolygon(lon_wg,lat_wg,ShelfBox(:,1),ShelfBox(:,2));
 findshelf=find(IN_shelf==1);
-IN_open=inpolygon(lon_wg,lat_wg,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
+IN_open=inpolygon(lon_wg,lat_wg,OOBox(:,1),OOBox(:,2));
 findopen=find(IN_open==1);
+IN_wap=inpolygon(lon_wg,lat_wg,WAPBox(:,1),WAPBox(:,2));
+findWAP=find(IN_wap==1);
 
-region_sublist={'Weddell','Shelf','Open'};
-regionfindlist= {'findweddell','findshelf','findopen'};
+region_sublist={'Weddell','Shelf','Open','WAP'};
+regionfindlist= {'findweddell','findshelf','findopen','findWAP'};
 
 if setup.checkregions
     % % To check regions are within the same place
@@ -341,9 +351,9 @@ if setup.checkregions
     pcolor(lon_wg,lat_wg,box_check.Open);
     shading flat
     hold on
-    SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',5)%'#80471C'
-    O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',3.5)%,'LineStyle','--')
-
+    SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+    O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+    WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2)%,'LineStyle','--')
     % they look correct now! Phew!!
 end
 % close all
@@ -546,7 +556,7 @@ end
     end
 
     %     clearvars regionfindlist findweddell findshelf findopen temp setup
-         save('ProcessedData_8day_Jan22.mat','OceanProd_8day','algorithm','region_sublist','timedec8day');
+         save('ProcessedData_8day_Jan22_wWAP.mat','OceanProd_8day','algorithm','region_sublist','timedec8day');
          clearvars -except OceanProd* algorithm region_sublist time* cafe_npp_all time* lat_* lon_* andrex_box
     %% calculate NPP per m2 per day per year...
     % either: average daily rate per month (NPP_av_mgm2) for each year
