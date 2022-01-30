@@ -28,25 +28,18 @@ if data_daily
 elseif data_8day
     load('SeaIce_8day_20022020.mat')
 end
-% cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
-% load('cafe_8day_imported_recalc.mat', 'time_start_all');
-load('openshelfisobath_clean21.mat')
-% load('WAPSHelfOpenJan22.mat')
-load('box_lat_lons.mat', 'andrex_box')
-% time_start_ice8
-% time_end_ice8
 
 if data_daily
     % make 3 column time start variable that matches daily seaice data
     time_start_allice=[year month day];
     yearrange=unique(year);
+    clearvars year month day filenames
     % cut to start of NPP dataset - 8days starts on 4th July 2002
     % = 185 in seaice daily data
     time_start_allice=time_start_allice(185:end,:);
     ice_conc=ice_conc(:,:,185:end);
     %make dec time %(and datenum)
     timedec_allice=decyear(time_start_allice);
-    clearvars year month day
 end
 
 if data_8day
@@ -68,24 +61,38 @@ if data_8day
     clearvars time_start_all
 end
 
+
+if desktop
+    cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+else
+    cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+end
+% load('cafe_8day_imported_recalc.mat', 'time_start_all');
+
+%load('openshelfisobath_clean21.mat')
+load('WAPSHelfOpenJan22.mat')
+load('box_lat_lons.mat', 'andrex_box')
+% time_start_ice8
+% time_end_ice8
+
 %% Import regions: shelf and open ocean then andrex box
 
 BoxIn=andrex_box;
 %BoxIn=[-55,-55,-30,-30;-45,-38,-38,-45]';
-ShelfBox=shelf_region_ANDbox;%%ShelfMinusWAPJan22
-OOBox=open_ocean_ANDbox;%%OpenOceanMinusWAPJan22
-%WAPBox=WAPJan22;
+ShelfBox=ShelfMinusWAPJan22;%shelf_region_ANDbox%ShelfMinusWAPJan22
+OOBox=OpenOceanMinusWAPJan22;%open_ocean_ANDbox%OpenOceanMinusWAPJan22
+WAPBox=WAPJan22;
 IN_and=inpolygon(g_lon,g_lat,BoxIn(:,1),BoxIn(:,2));
 findweddell=find(IN_and==1);
 IN_shelf=inpolygon(g_lon,g_lat,ShelfBox(:,1),ShelfBox(:,2));
 findshelf=find(IN_shelf==1);
 IN_open=inpolygon(g_lon,g_lat,OOBox(:,1),OOBox(:,2));
 findopen=find(IN_open==1);
-% IN_wap=inpolygon(g_lon,g_lat,WAPBox(:,1),WAPBox(:,2));
-% findWAP=find(IN_wap==1);
+IN_wap=inpolygon(g_lon,g_lat,WAPBox(:,1),WAPBox(:,2));
+findWAP=find(IN_wap==1);
 
-region_sublist={'Weddell','Shelf','Open'}; %,'WAP'
-regionfindlist= {'findweddell','findshelf','findopen'}; %,'findWAP'
+region_sublist={'Weddell','Shelf','Open','WAP'}; %
+regionfindlist= {'findweddell','findshelf','findopen','findWAP'}; %
 
 if setup.checkregions
     % % To check regions are within the same place
@@ -128,8 +135,9 @@ if setup.checkregions
     worldmap(latlim,lonlim)
     hold on
     pcolorm(g_lat,g_lon,box_check.Weddell)
-    %pcolorm(g_lat,g_lon,box_check.Shelf);
-    %pcolorm(g_lat,g_lon,box_check.Open);
+    pcolorm(g_lat,g_lon,box_check.Shelf);
+    pcolorm(g_lat,g_lon,box_check.Open);
+    pcolorm(g_lat,g_lon,box_check.WAP);
     geoshow(antarctica)
     title('ANDREX box')
 end
@@ -192,11 +200,11 @@ end
 clearvars testice* icefree*
 
 %% Area of WG, SR, OO based on sea ice grid
-SeaIce.g_area.Weddell=sum(g_area(findweddell));
 % SeaIce.g_area.Weddell2=sum(sum(g_area.*box_logic_check.Weddell)); %same same
+SeaIce.g_area.Weddell=sum(g_area(findweddell));
 SeaIce.g_area.Shelf=sum(g_area(findshelf));
 SeaIce.g_area.Open=sum(g_area(findopen));
-% SeaIce.g_area.WAP=sum(g_area(findWAP));
+SeaIce.g_area.WAP=sum(g_area(findWAP));
 SeaIce.g_area.OOSRtot=SeaIce.g_area.Open+SeaIce.g_area.Shelf; % same same
 SeaIce.g_area.Weddell-SeaIce.g_area.OOSRtot
 
