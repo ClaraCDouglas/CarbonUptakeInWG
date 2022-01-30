@@ -65,7 +65,6 @@ if setup.eightday
     timedec8day_end=decyear(time_end_all);
 end
 
-
 %% day chunks
 leapyear1=time_start_all(:,1);
 leapyear2=rem(leapyear1,4)==0;
@@ -137,13 +136,16 @@ AnnualNPPRate_gperyear=AnnualNPPRate_mgperyear./1000;
 % end
 
 %%
-load('openshelfisobath_clean21.mat')
+% load('openshelfisobath_clean21.mat')
+load('WAPSHelfOpenJan22.mat')
 load('box_lat_lons.mat', 'andrex_box')
-
 
 %% 8-DAY DATA
 %% Check data region
 if setup.checkregions
+    ShelfBox=ShelfMinusWAPJan22;%shelf_region_ANDbox
+    OOBox=OpenOceanMinusWAPJan22;%open_ocean_ANDbox
+    WAPBox=WAPJan22;
     figure;
     pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,1)); shading flat; caxis([0 400]); colorbar;
     figure;
@@ -151,22 +153,28 @@ if setup.checkregions
     figure;
     pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,30)); shading flat; caxis([0 600]); colorbar;
     hold on
-    SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
-    O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+    SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+    O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+    WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2)%,'LineStyle','--')
 end
 clearvars SR_line O_line
 %% Import regions: shelf and open ocean then andrex box
 BoxIn=andrex_box;
 %BoxIn=[-55,-55,-30,-30;-45,-38,-38,-45]';
+ShelfBox=ShelfMinusWAPJan22;%shelf_region_ANDbox
+OOBox=OpenOceanMinusWAPJan22;%open_ocean_ANDbox
+WAPBox=WAPJan22;
 IN_and=inpolygon(lon_wg,lat_wg,BoxIn(:,1),BoxIn(:,2));
 findweddell=find(IN_and==1);
-IN_shelf=inpolygon(lon_wg,lat_wg,shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2));
+IN_shelf=inpolygon(lon_wg,lat_wg,ShelfBox(:,1),ShelfBox(:,2));
 findshelf=find(IN_shelf==1);
-IN_open=inpolygon(lon_wg,lat_wg,open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2));
+IN_open=inpolygon(lon_wg,lat_wg,OOBox(:,1),OOBox(:,2));
 findopen=find(IN_open==1);
+IN_wap=inpolygon(lon_wg,lat_wg,WAPBox(:,1),WAPBox(:,2));
+findWAP=find(IN_wap==1);
 
-region_sublist={'Weddell','Shelf','Open'};
-regionfindlist= {'findweddell','findshelf','findopen'};
+region_sublist={'Weddell','Shelf','Open','WAP'};
+regionfindlist= {'findweddell','findshelf','findopen','findWAP'};
 
 if setup.checkregions
     % % To check regions are within the same place
@@ -184,6 +192,9 @@ if setup.checkregions
     shading flat
     figure;
     pcolor(lon_wg,lat_wg,box_check.Open);
+    shading flat
+    figure;
+    pcolor(lon_wg,lat_wg,box_check.WAP);
     shading flat
     hold on
     SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',5)%'#80471C'
@@ -212,7 +223,6 @@ for aix = 1:length(algorithm)
     end
 end
 
-
 %% Selecting values within region boxes only
 for aix = 1:length(algorithm)
     for rix = 1:length(region_sublist)
@@ -226,33 +236,51 @@ for aix = 1:length(algorithm)
     end
 end
 
-
 %%
 
 % maps version
 
-for rix = 1%:length(region_sublist)
+for rix = 1:length(region_sublist)
     for yix=2003:2020
         temp_icefreedays=IceFreeDays_peryear(:,:,yix-2002);
-        IceFree_pixels_yearsMAP(:,:,yix-2002)=temp_icefreedays.*(temp.(region_sublist{rix}).box_logic);
+        IceFree_pixels_yearsMAP.(region_sublist{rix})(:,:,yix-2002)=temp_icefreedays.*(temp.(region_sublist{rix}).box_logic);
         
         temp_AnnualNPPRate=AnnualNPPRate_gperyear(:,:,yix-2002);
-        AnnualNPPRate_pixels_yearsMAP(:,:,yix-2002)=temp_AnnualNPPRate.*(temp.(region_sublist{rix}).box_logic);
+        AnnualNPPRate_pixels_yearsMAP.(region_sublist{rix})(:,:,yix-2002)=temp_AnnualNPPRate.*(temp.(region_sublist{rix}).box_logic);
     end
 end
 
 
-figure; tiledlayout('flow'); nexttile; pcolor(IceFree_pixels_yearsMAP(:,:,1)); shading flat; nexttile; pcolor(AnnualNPPRate_pixels_yearsMAP(:,:,1)); shading flat
+% figure; tiledlayout('flow'); nexttile; pcolor(IceFree_pixels_yearsMAP.(region_sublist{rix})(:,:,1)); shading flat; nexttile; pcolor(AnnualNPPRate_pixels_yearsMAP.(region_sublist{rix})(:,:,1)); shading flat
 
-
+rix=1;
 figure;
 tiledlayout('flow'); nexttile;
-pcolor(lon_wg,lat_wg,IceFree_pixels_yearsMAP(:,:,4)); shading flat; %caxis([0 600]); colorbar;
+pcolor(lon_wg,lat_wg,IceFree_pixels_yearsMAP.(region_sublist{rix})(:,:,1)); shading flat; %caxis([0 600]); colorbar;
 hold on
-SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
-O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2)%,'LineStyle','--')
 nexttile;
-pcolor(lon_wg,lat_wg,AnnualNPPRate_pixels_yearsMAP(:,:,4)); shading flat; %caxis([0 600]); colorbar;
+pcolor(lon_wg,lat_wg,AnnualNPPRate_pixels_yearsMAP.(region_sublist{rix})(:,:,1)); shading flat; %caxis([0 600]); colorbar;
 hold on
-SR_line=plot(shelf_region_ANDbox(:,1),shelf_region_ANDbox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
-O_line=plot(open_ocean_ANDbox(:,1),open_ocean_ANDbox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2)%,'LineStyle','--')
+
+
+%% max rates
+
+% AnnualNPPRate_mgperyear=NaN(1080,1380,length([2003:1:2020]));
+for yix = 2003%:2020
+    temp_anntot=zeros(1080,1380);
+    findyear=find(timedec8day_mid>yix-0.5 & timedec8day_mid<yix+0.5);
+    tempNPP_yeararray=cafe_npp_all_8day(:,:,findyear); %austral year time slice of NPP av daily rates
+    [M,I]= max(tempNPP_yeararray,[],3,'omitnan');
+end
+
+figure; pcolor(lon_wg,lat_wg,I); shading flat; hold on
+SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2)%'#80471C'
+O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2)%,'LineStyle','--')
+WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2)%,'LineStyle','--')
+

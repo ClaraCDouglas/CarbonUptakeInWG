@@ -529,8 +529,10 @@ end
             OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).day_chunk_rates_gm2=(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans.*day_chunk)/1000;
             for yix = 2003:2020
                 findyear=find(timedec8day>yix-0.5 & timedec8day<yix+0.5);
-                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).annual_rate_chunk(yix-2002,1)= ...
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).annual_rate(yix-2002,1)= ...
                     sum(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).day_chunk_rates_gm2(findyear),'omitnan');
+                OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).GSav_dayrate(yix-2002,1)= ...
+                    mean(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).NPP_av_mgm2_nans(findyear),'omitnan');
                 day_chunk_IF=day_chunk(findyear);
                 day_chunk_IF(isnan(OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).day_chunk_rates_gm2(findyear)))=NaN;
                 OceanProd_8day.(algorithm{aix}).(region_sublist{rix}).days_ice_free(yix-2002,1)=sum(day_chunk_IF,'omitnan')
