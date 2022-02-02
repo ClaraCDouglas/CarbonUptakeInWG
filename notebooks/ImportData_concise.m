@@ -1,7 +1,7 @@
 %% Load data or calculate from scratch
 clearvars
-desktop = 1;
-laptop=0;
+desktop = 0;
+laptop=1;
 % Select algorithm:
 %     algo_choice = 'cbpm'; %not so good
 %     algo_choice = 'vbpm'; % best?
@@ -14,15 +14,13 @@ laptop=0;
 
 % Passport - data holdall
 if laptop
-    cd 'E:\Data\NPP\NPP_extracted'
-    filebase = 'E:\Data\NPP\NPP_extracted';
+    cd 'D:\Data\NPP\NPP_extracted'
+    filebase = 'D:\Data\NPP\NPP_extracted';
 elseif desktop
     cd 'F:\Data\NPP\NPP_extracted'
-    filebase = 'E:\Data\NPP\NPP_extracted';
+    filebase = 'F:\Data\NPP\NPP_extracted';
 end
 D0 = dir(fullfile(filebase,'*.hdf'));
-
-
 % D0 = dir('vgpm*.hdf'); % if D0 above doesn't work, go to folder with data in, and run with correct prefix
 
 % dataload='scratch';
@@ -168,7 +166,17 @@ clearvars area_MODIScafe_m2 area_MODIScafe_km2 lon_m lat_m
 
 figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
 
-    %% Calculate total npp for 8 day period in gC
+    %% Calculate total npp for 8 day period (/time slice) in gC
+    timedec8day=decyear(time_start_all);
+    timedec8day_end=decyear(time_end_all);
+    leapyear1=time_start_all(:,1);
+    leapyear2=rem(leapyear1,4)==0; % find where the years are leap years (i.e. divisible by 4)
+    leapyear3=zeros(length(leapyear1),1);
+    leapyear3(leapyear2==1)=366; % indicate whether the entry is part of a leap year or not
+    leapyear3(leapyear3==0)=365; % indicate whether the entry is part of a leap year or not
+    days_test(:,1)=(timedec8day_end-timedec8day); % decimal days in the time slice
+    day_chunk=days_test(:,1).*leapyear3; % multiply by the number of days in that specific entry's year to get the number of days included in the entry/time slice
+
         cafe_npp_tot_gC_all_8day = cafe_npp_all_8day;
         cafe_npp_tot_gC_all_8day(:)=NaN;
         fprintf(['Calculate NPP: (of ',num2str(length(D0)),'):  '])
@@ -178,18 +186,11 @@ figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
             npptp=cafe_npp_all_8day(:,:,ii);
             findneg=find(npptp<0);
             npptp(findneg)=0;
-%             cafe_npp_tot_gC_all(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
-
-            if ~(time_start_all(ii,2)==12)
-                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2_wg.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
-            elseif time_start_all(ii,2)==12
-                cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODISvgpm_m2_wg.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
-            else
-                error('ERROR in total NPP per 8 day calc')
-            end
+            % cafe_npp_tot_gC_all(:,:,ii)=(npptp.*area_MODISvgpm_m2.*(time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+            cafe_npp_tot_gC_all_8day(:,:,ii)=(npptp.*area_MODIScafe_m2_wg.*day_chunk(ii))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
         end
 
-    %% Calculate npp for 8 day period in gC - WITH NANS
+    %% Calculate npp for 8 day period in gC (/time slice) - WITH NANS
         cafe_npp_tot_gC_nans_8day = cafe_npp_all_8day;
         cafe_npp_tot_gC_nans_8day(:)=NaN;
         fprintf(['Calculate NPP: (of ',num2str(length(D0)),'):  '])
@@ -199,19 +200,10 @@ figure; pcolor(lon_wg,lat_wg,cafe_npp_all_8day(:,:,843)); shading flat
             npptp=cafe_npp_all_8day(:,:,ii);
             findneg=find(npptp<0);
             npptp(findneg)=NaN;
-%             cafe_npp_tot_gC_nans(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
-        
-            if ~(time_start_all(ii,2)==12)
-                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODIScafe_m2_wg.*8)./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
-            elseif time_start_all(ii,2)==12
-                cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODIScafe_m2_wg.*(time_end_all(ii,3)-time_start_all(ii,3)+1))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
-            else
-                error('ERROR in total NPP per 8 day calc with NaNs')
-            end
-
-
+            % cafe_npp_tot_gC_nans(:,:,ii)=(npptp.*area_MODISvgpm_m2.*time_end_all(ii,3))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
+            cafe_npp_tot_gC_nans_8day(:,:,ii)=(npptp.*area_MODIScafe_m2_wg.*day_chunk(ii))./1000; %Npp (mg C /m2 /day) * area (m2) * number of days / 1000 => gC per pixel in month (/1000 to convert mg to g)
         end
-clear ii npptp findneg
+clear ii npptp findneg leap* day*
 
 %% sanity check
 
@@ -219,6 +211,14 @@ figure; pcolor(lon_wg,lat_wg,cafe_npp_tot_gC_nans_8day(:,:,843)); shading flat
 
 %% Save variables
 % cd ..\..\Workspace_variables
+
+desktop = 0;
+laptop=1;
+if desktop
+    cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+elseif laptop
+    cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+end
 save cafe_8day_imported_eqWG_withNaNs -v7.3
 
  %723 s to run on laptop       
