@@ -2,20 +2,19 @@
 % clearvars
 cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 load('ProcessedData_8day_Jan22_wWAP.mat') %ProcessedData_8day_Jan22
-load('SeaIceDaily_Jan22_wWAP.mat') %SeaIceDaily_Jan22
+load('SeaIceDaily_Jan22_wWAPauto.mat') %SeaIceDaily_Jan22
 
 % Make max-min SIE
-for rix = 1:3%length(region_sublist)
+for rix = 1:length(region_sublist)
     SeaIce.(region_sublist{rix}).SIE_ausMAX=max(SeaIce.(region_sublist{rix}).SIExtent_aus,[],1,'omitnan');
     SeaIce.(region_sublist{rix}).SIE_ausMIN=min(SeaIce.(region_sublist{rix}).SIExtent_aus,[],1,'omitnan');
     SeaIce.(region_sublist{rix}).SIE_ausDIF=(SeaIce.(region_sublist{rix}).SIE_ausMAX-SeaIce.(region_sublist{rix}).SIE_ausMIN)';
-figure; bar(SeaIce.(region_sublist{rix}).SIE_ausMAX); hold on; bar(SeaIce.(region_sublist{rix}).SIE_ausMIN); plot(SeaIce.(region_sublist{rix}).SIE_ausDIF); 
+    figure; bar(SeaIce.(region_sublist{rix}).SIE_ausMAX); hold on; bar(SeaIce.(region_sublist{rix}).SIE_ausMIN); plot(SeaIce.(region_sublist{rix}).SIE_ausDIF);
 % ylim([3.5e6 6e6])
 end
 
 % make structure of all variables for corr testing
-for rix = 1:3 %length(region_sublist)
-
+for rix = 1:length(region_sublist)
 Regression.MeanSIE.(region_sublist{rix})=mean(SeaIce.(region_sublist{rix}).SIExtent_aus,1,'omitnan');
 Regression.MeanSIE.(region_sublist{rix})=(Regression.MeanSIE.(region_sublist{rix})/1e6)';
 Regression.MeanSIA.(region_sublist{rix})=mean(SeaIce.(region_sublist{rix}).SIArea_aus,1,'omitnan');
@@ -63,22 +62,75 @@ end
 
 figure; scatter(Regression.SIE_dif.Weddell(13:end),Regression.NCP(13:end))
 %% Regression Jan 22
-rix = 1
-Regression.tbl=table(Regression.Year,Regression.MeanSIE.(region_sublist{rix}),Regression.MeanIFE.(region_sublist{rix}),...
-    Regression.MeanSIA.(region_sublist{rix}),Regression.MeanIFA.(region_sublist{rix}),Regression.NPP_AnTot.(region_sublist{rix}),Regression.NPP_AnRate.(region_sublist{rix}),...
-    'VariableNames',{'Year','SIE','IFE','SIA','IFA','NPP','NPPrate'});
+for rix = 1:length(region_sublist)
+Regression.tbl.(region_sublist{rix})=table(Regression.Year,Regression.MeanSIE.(region_sublist{rix}),Regression.MeanIFE.(region_sublist{rix}),...
+    Regression.MeanSIA.(region_sublist{rix}),Regression.MeanIFA.(region_sublist{rix}),Regression.SIE_dif.(region_sublist{rix}),...
+    Regression.NPP_AnTot.(region_sublist{rix}),Regression.NPP_AnRate.(region_sublist{rix}),Regression.NPP_AvGSRate.(region_sublist{rix}),...
+    'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIE_dif','NPP','NPPrate','NPPGSrate'});
 
-Regression.lmNPPSIE=fitlm(Regression.tbl,'NPP~SIE');
-Regression.lmNPPIFE=fitlm(Regression.tbl,'NPP~IFE');
-Regression.lmNPPSIA=fitlm(Regression.tbl,'NPP~SIA');
-Regression.lmNPPIFA=fitlm(Regression.tbl,'NPP~IFA');
+Regression.lmNPPSIE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE');
+Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE');
+Regression.lmNPPSIA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIA');
+Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA');
 
-disp(Regression.lmNPPSIE)
-disp(Regression.lmNPPIFE)
-disp(Regression.lmNPPSIA)
-disp(Regression.lmNPPIFA)
+Regression.lmRateIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~IFE');
 
+Regression.lmNPPdif.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE_dif');
+Regression.lmRatedif.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~SIE_dif');
+
+Regression.lmGSRateIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPGSrate~IFE');
+end
+
+%       DISPLAY MODEL OUTPUTS
+for rix = 1:length(region_sublist)
+% disp(Regression.lmNPPSIE.(region_sublist{rix}))
+% disp(Regression.lmNPPIFE.(region_sublist{rix}))
+% disp(Regression.lmNPPSIA.(region_sublist{rix}))
+% disp(Regression.lmNPPIFA.(region_sublist{rix}))
+% disp(Regression.lmRateIFE.(region_sublist{rix}))
+% disp(Regression.lmNPPdif.(region_sublist{rix}))
+% disp(Regression.lmRatedif.(region_sublist{rix}))
+disp(Regression.lmGSRateIFE.(region_sublist{rix}))
+end
+
+%       AIC
+model_list={'lmNPPSIE','lmNPPIFE','lmNPPSIA','lmNPPIFA','lmRateIFE'};
+
+for rix = 1:length(region_sublist)
+    for mix=[2 5]%:length(model_list)
+    Regression.(model_list{mix}).(region_sublist{rix}).ModelCriterion.AIC
+    end
+end
 %% plot
+close(figure(1))
+figure(3);
+tiledlayout(2,2)
+anpos=[0.1, 0.8, 0.1, 0.1;0.55, 0.8, 0.1, 0.1;0.1, 0.3, 0.1, 0.1;0.55, 0.3, 0.1, 0.1];
+for rix = 1:length(region_sublist)
+    nexttile
+    plot(Regression.lmRateIFE.(region_sublist{rix})) %lmNPPIFE %lmRateIFE %lmGSRateIFE
+    title((region_sublist{rix}))
+    xtxt={'Mean Ice Free Extent (10^6 km^2)'};
+    xlabel(xtxt,'Interpreter','tex')
+    ylabel('Annual NPP (gC m^2 a^{-1})','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+    l=legend;
+    l.Location='southeast';
+%     if rix==2
+%         ylim([-0.2 inf])
+%         yline(0,':k')
+%     end
+    c=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{1,1};
+    m=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{2,1};
+    R2=Regression.lmRateIFE.(region_sublist{rix}).Rsquared.Adjusted;
+    p=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{2,4};
+    str={'R^2=' num2str(R2),' p=' num2str(p);'NPP=' num2str(m) '*IFE+' num2str(c)};
+    str2={strjoin(str(1:2:8));strjoin(str(2:2:8))};
+    annotation('textbox', anpos(rix,:),'String',str2,'FitBoxToText','on')
+end
+
+
+
+
 figure;
 t = tiledlayout('flow')
 % nexttile
