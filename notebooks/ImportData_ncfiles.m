@@ -2,18 +2,18 @@
 clearvars
 cd E:\Data
 % Select data folder:
-filebase = 'E:\Data\Chl_a\';
+filebase = 'D:\Data\Wind\Blended\www.ncei.noaa.gov\data\blended-global-sea-surface-wind-products\access\winds\daily\2008';
 filedir = append(filebase,'A');
 D0 = dir(fullfile(filebase,'*.nc*'));
-    cd 'E:\Data\Chl_a\';
+    cd 'D:\Data\Wind\Blended\www.ncei.noaa.gov\data\blended-global-sea-surface-wind-products\access\winds\daily\2008';
 
 % test a file
-%     ls % copy a file to look at details
-%     nc='A20211522021181.L3m_MO_CHL_chlor_a_9km.nc@appkey=886fb1b19604d32206f25f491377e90ae57d87d5'
-%     A=ncinfo(nc)
-%     A.Variables
-%     A.Variables.Name
-%     ncdisp(nc)
+    ls % copy a file to look at details
+    nc='uv20081231.nc'
+    A=ncinfo(nc)
+    A.Variables
+    A.Variables.Name
+    ncdisp(nc)
 %     % fill value for chl data is -32767, -999 for lat/lon.
 %     % size is 4320x2160
 %     testdata=ncread(nc, 'chlor_a'); % example variable name for SSH was Grid_0001
@@ -22,7 +22,7 @@ D0 = dir(fullfile(filebase,'*.nc*'));
 %     figure; pcolor(testdata); shading flat
 %     colorbar; caxis([0 2])
 %% For bringing in new data files
-%% Importing multiple nc files -- chlorophyll
+%% Importing multiple nc files -- wind
 
 lat_north=-40;
 lat_south=-90;
@@ -31,25 +31,41 @@ lon_east=180;
 
 b=struct2cell(D0);
 % chl_all=NaN*ones(2160,4320,length(D0));
-chl_south=NaN*ones(600,4320,length(D0));
+u_comp=NaN*ones(199,1439,length(D0));
+v_comp=NaN*ones(199,1439,length(D0));
+speed=NaN*ones(199,1439,length(D0));
 for ix=1:length(D0)
     list=b{1,ix};
-    chl=ncread(list,'chlor_a');
-    chl=chl';
-    chl(chl<-900)=NaN;  % fill value (missing data) is  <0 : check ncdisp(nc)
-    lat_chl=ncread(list,'lat');
-    lon_chl=ncread(list,'lon');
-    J=find(lat_chl>lat_south & lat_chl<lat_north);
-    K=find(lon_chl>lon_west & lon_chl<lon_east);
-    chl_south(:,:,ix)=chl(J,K);
+    u=ncread(list,'u');
+    u=u';
+    u2=cat(2, u(:,722:end),u(:,1:721));
+    u(u<-900)=NaN;  % fill value (missing data) is  <0 : check ncdisp(nc)
+    v=ncread(list,'v');
+    v=v';
+    v2=cat(2, v(:,722:end),v(:,1:721));
+    v(v<-900)=NaN;  % fill value (missing data) is  <0 : check ncdisp(nc)
+    s=ncread(list,'w');
+    s=s';
+    s2=cat(2, s(:,722:end),s(:,1:721));
+    s(s<-900)=NaN;  % fill value (missing data) is  <0 : check ncdisp(nc)
+    lat_wind=ncread(list,'lat');
+    lon_wind=ncread(list,'lon');
+    lon2=cat(1, lon_wind(722:end),lon_wind(1:721));
+    lonW=wrapTo180(lon2);
+    J=find(lat_wind>lat_south & lat_wind<lat_north);
+    K=find(lonW>lon_west & lonW<lon_east);
+    u_comp(:,:,ix)=u2(J,K);
+    v_comp(:,:,ix)=v2(J,K);
+    speed(:,:,ix)=s2(J,K);
 %     chl_all(:,:,ix)=chl; % only run on more powerful computer (15.9GB needed)
 
 end
-lat_south=lat_chl(J);
-lon_south=lon_chl(K);
+lat_w=lat_wind(J);
+lon_w=lonW(K);
 
-clearvars -except 'chl*' 'lat_chl' 'lat_south' 'lon_chl' 'lon_south' 'D0' 'filebase' 'filedir' 'b'
-
+clearvars -except '*comp' 'lat_w' 'lon_w' 'speed' 'D0' 'filebase' 'filedir' 'b'
+figure; pcolor(lon_w, lat_w, speed(:,:,1)); shading flat;
+geoshow('landareas.shp', 'facecolor', 'k');
 %% time start/end data
 time_start_all=NaN*ones(length(D0),3);
 time_end_all=NaN*ones(length(D0),3);
