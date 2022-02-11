@@ -78,6 +78,8 @@ target/
 # exclude data from source control by default
 data/processed/*imported*.mat
 data/processed/SeaIce_daily_8day_20022020.mat
+data/processed/*Array
+data/processed
 data/raw/
 data/interim/
 # I want to be able to handle links in here...need to exclude certain file types

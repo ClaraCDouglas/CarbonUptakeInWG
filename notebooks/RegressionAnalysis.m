@@ -1,16 +1,20 @@
 %% data ready
 % clearvars
 cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
-load('ProcessedData_8day_Jan22_wWAP.mat') %ProcessedData_8day_Jan22
+load('ProcessedData_8day_Feb22.mat') %ProcessedData_8day_Jan22
 load('SeaIceDaily_Jan22_wWAPauto.mat') %SeaIceDaily_Jan22
-
+close all
 % Make max-min SIE
 for rix = 1:length(region_sublist)
     SeaIce.(region_sublist{rix}).SIE_ausMAX=max(SeaIce.(region_sublist{rix}).SIExtent_aus,[],1,'omitnan');
     SeaIce.(region_sublist{rix}).SIE_ausMIN=min(SeaIce.(region_sublist{rix}).SIExtent_aus,[],1,'omitnan');
     SeaIce.(region_sublist{rix}).SIE_ausDIF=(SeaIce.(region_sublist{rix}).SIE_ausMAX-SeaIce.(region_sublist{rix}).SIE_ausMIN)';
     figure; bar(SeaIce.(region_sublist{rix}).SIE_ausMAX); hold on; bar(SeaIce.(region_sublist{rix}).SIE_ausMIN); plot(SeaIce.(region_sublist{rix}).SIE_ausDIF);
-% ylim([3.5e6 6e6])
+    title((region_sublist{rix}))
+    % ylim([3.5e6 6e6])
+    xticks([1:1:18])
+    xticklabels(2003:1:2020)
+    xtickangle(45)
 end
 
 % make structure of all variables for corr testing
@@ -26,13 +30,14 @@ Regression.MeanIFA.(region_sublist{rix})=(SeaIce.g_area.(region_sublist{rix})/1e
 Regression.SIE_dif.(region_sublist{rix})=SeaIce.(region_sublist{rix}).SIE_ausDIF;
 
 Regression.NPP_AnTot.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).NPP_tot_TgC_annual(2:end,2);
-Regression.NPP_AnRate.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).annual_rate; %_chunk (prev version) % annual rate of NPP (gC m^-2 a^-1)
-Regression.NPP_AvGSRate.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).GSav_dayrate; % average daily rate of NPP (mgC m^-2 d^-1)
+Regression.NPP_AnRate.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).AnnualNPPRate_gm2peryear; % % annual rate of NPP (gC m^-2 a^-1)
+Regression.NPP_AvGSRate.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).AnAvDayRate_mgm2d1; % average daily rate of NPP (mgC m^-2 d^-1)
 
 Regression.Year=yearrange0320;
 end
 Regression.NCP=NCP(:,2);
 rix=2
+
 %% Spearman Correlation (for non-normally distributed data)
 for rix = 1:3%length(region_sublist)
 lev=kstest(Regression.NPP_AnRate.(region_sublist{rix})) % etc - all not normal
@@ -108,21 +113,21 @@ tiledlayout(2,2)
 anpos=[0.1, 0.8, 0.1, 0.1;0.55, 0.8, 0.1, 0.1;0.1, 0.3, 0.1, 0.1;0.55, 0.3, 0.1, 0.1];
 for rix = 1:length(region_sublist)
     nexttile
-    plot(Regression.lmRateIFE.(region_sublist{rix})) %lmNPPIFE %lmRateIFE %lmGSRateIFE
+    plot(Regression.lmGSRateIFE.(region_sublist{rix})) %lmNPPIFE %lmRateIFE %lmGSRateIFE
     title((region_sublist{rix}))
     xtxt={'Mean Ice Free Extent (10^6 km^2)'};
     xlabel(xtxt,'Interpreter','tex')
-    ylabel('Annual NPP (gC m^2 a^{-1})','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+    ylabel('Growing Season NPP (mg m^{-2} d^{-1})','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
     l=legend;
     l.Location='southeast';
 %     if rix==2
 %         ylim([-0.2 inf])
 %         yline(0,':k')
 %     end
-    c=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{1,1};
-    m=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{2,1};
-    R2=Regression.lmRateIFE.(region_sublist{rix}).Rsquared.Adjusted;
-    p=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{2,4};
+    c=Regression.lmGSRateIFE.(region_sublist{rix}).Coefficients{1,1};
+    m=Regression.lmGSRateIFE.(region_sublist{rix}).Coefficients{2,1};
+    R2=Regression.lmGSRateIFE.(region_sublist{rix}).Rsquared.Adjusted;
+    p=Regression.lmGSRateIFE.(region_sublist{rix}).Coefficients{2,4};
     str={'R^2=' num2str(R2),' p=' num2str(p);'NPP=' num2str(m) '*IFE+' num2str(c)};
     str2={strjoin(str(1:2:8));strjoin(str(2:2:8))};
     annotation('textbox', anpos(rix,:),'String',str2,'FitBoxToText','on')
@@ -191,10 +196,37 @@ plot(Regression.lmRateIFA)
 
 
 %% pixel by pixel
+load('ProcessedCafeArrays.mat')
+data_daily=true;
+data_8day=false;
+load data
+cd 'D:\Data\SeaIceNIMBUS';
+if data_daily
+    load('SeaIce_daily_20022020.mat')
+    load('SeaIce_8day_20022020.mat','g_area','g_lat','g_lon')
+elseif data_8day
+    load('SeaIce_8day_20022020.mat')
+end
+cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 
-%IceFree_pixels_years
-%AnnualNPPRate_pixels_years
-clearvars find*
+% Selecting values within region boxes only
+for aix = 1:length(algorithm)
+    for rix = 1:length(region_sublist)
+        for yix=2003:2020
+            temp_icefreedays=IceFreeDays_peryear(:,:,yix-2002);
+            temp_icefreedays=round(temp_icefreedays);
+            IceFree_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_icefreedays(temp.(region_sublist{rix}).box_logic);
+            
+            temp_AnnualNPPRate=AnnualNPPRate_gperyear(:,:,yix-2002);
+            AnnualNPPRate_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_AnnualNPPRate(temp.(region_sublist{rix}).box_logic);
+
+            temp_AnAvDayRate=AnAvDayRate_mgm2d1(:,:,yix-2002);
+            AnAvDayRate_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_AnAvDayRate(temp.(region_sublist{rix}).box_logic);
+        end
+    end
+end
+clearvars temp_*
+
 % remove NaN NPP entries from all
 for rix = 1:length(region_sublist)
     %     IceFree_pixels_years.(region_sublist{rix})(isnan(IceFree_pixels_years.(region_sublist{rix})))=0;
@@ -202,19 +234,264 @@ for rix = 1:length(region_sublist)
     
     IceFree_pixels_years_COL.(region_sublist{rix})=reshape(IceFree_pixels_years.(region_sublist{rix}),[],1);
     AnnualNPPRate_pixels_years_COL.(region_sublist{rix})=reshape(AnnualNPPRate_pixels_years.(region_sublist{rix}),[],1);
+    AnAvDayRate_pixels_years_COL.(region_sublist{rix})=reshape(AnAvDayRate_pixels_years.(region_sublist{rix}),[],1);
     
     findNaN_NPP=isnan(AnnualNPPRate_pixels_years_COL.(region_sublist{rix}));
     findzero_ice=(IceFree_pixels_years_COL.(region_sublist{rix})==0);
+    findNaN_NPPd=isnan(AnAvDayRate_pixels_years_COL.(region_sublist{rix}));
     
-        if findNaN_NPP==findzero_ice
+        if findNaN_NPP==findzero_ice & findzero_ice==findNaN_NPPd
             IceFree_pixels_years_COL.(region_sublist{rix})(findNaN_NPP)=[];
             AnnualNPPRate_pixels_years_COL.(region_sublist{rix})(findNaN_NPP)=[];
+            AnAvDayRate_pixels_years_COL.(region_sublist{rix})(findNaN_NPPd)=[];
         else
             disp('No match')
         end
 end
 
-%
+
+%% Pixel Regression
+
+for rix=1:length(region_sublist)
+    
+    Regression.tbl_pixels.(region_sublist{rix})=table(IceFree_pixels_years_COL.(region_sublist{rix}),...
+        AnnualNPPRate_pixels_years_COL.(region_sublist{rix}),AnAvDayRate_pixels_years_COL.(region_sublist{rix}),...
+        'VariableNames',{'IceFree','AnNPPrate','AnAvDayRate'});
+    
+    Regression.lm_Pixel.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnNPPrate~IceFree');
+    disp(Regression.lm_Pixel.(region_sublist{rix}))
+    Regression.lm_Pixeld.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnAvDayRate~IceFree');
+    disp(Regression.lm_Pixeld.(region_sublist{rix}))
+    % Regression.lm_Pixelmedian.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMedian~IceFreeMedian');
+    %  disp(Regression.lm_Pixelmedian.(region_sublist{rix}))
+end
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_Pixel.(region_sublist{rix}))
+    l=legend;
+    l.Location='southeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Annual NPP (g m^{-2})','Interpreter','tex')
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_Pixeld.(region_sublist{rix}))
+    l=legend;
+    l.Location='northeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Mean daily NPP (g m^{-2} d^{-1})','Interpreter','tex')
+    xlim([0 300])
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+boxplot(AnAvDayRate_pixels_years_COL.(region_sublist{rix}),IceFree_pixels_years_COL.(region_sublist{rix}))
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Mean daily NPP (g m^{-2} d^{-1})','Interpreter','tex')
+end
+
+
+for rix = 1:length(region_sublist)
+    [rho.(region_sublist{rix}),p.(region_sublist{rix})]=corr(AnnualNPPRate_pixels_years_mean.(region_sublist{rix}),IceFree_pixels_years_mean.(region_sublist{rix}),'Type','Pearson')
+end
+
+%% means regressions by location
+for rix = 1:length(region_sublist)
+    IceFree_pixels_yearsN.(region_sublist{rix})=IceFree_pixels_years.(region_sublist{rix});
+    IceFree_pixels_yearsN.(region_sublist{rix})(IceFree_pixels_years.(region_sublist{rix})==0)=NaN;
+    IceFree_pixels_MEANS.(region_sublist{rix})=mean(IceFree_pixels_yearsN.(region_sublist{rix}),2,'omitnan');
+    AnnualNPPRate_pixels_MEAN.(region_sublist{rix})=mean(AnnualNPPRate_pixels_years.(region_sublist{rix}),2,'omitnan');
+    AnAvDayRate_pixels_MEAN.(region_sublist{rix})=mean(AnAvDayRate_pixels_years.(region_sublist{rix}),2,'omitnan');
+end
+for rix=1:length(region_sublist)
+    
+    Regression.tbl_pixels.(region_sublist{rix})=table(IceFree_pixels_MEANS.(region_sublist{rix}),...
+        AnnualNPPRate_pixels_MEAN.(region_sublist{rix}),AnAvDayRate_pixels_MEAN.(region_sublist{rix}),...
+        'VariableNames',{'IceFreeM','AnNPPrateM','AnAvDayRateM'});
+    
+    Regression.lm_PixelM.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnNPPrateM~IceFreeM');
+    disp(Regression.lm_PixelM.(region_sublist{rix}))
+    Regression.lm_PixeldM.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnAvDayRateM~IceFreeM');
+    disp(Regression.lm_PixeldM.(region_sublist{rix}))
+    % Regression.lm_Pixelmedian.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMedian~IceFreeMedian');
+    %  disp(Regression.lm_Pixelmedian.(region_sublist{rix}))
+end
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_PixelM.(region_sublist{rix}))
+    l=legend;
+    l.Location='southeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Annual NPP (g m^{-2})','Interpreter','tex')
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_PixeldM.(region_sublist{rix}))
+    l=legend;
+    l.Location='northeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Mean daily NPP (g m^{-2} d^{-1})','Interpreter','tex')
+    xlim([0 300])
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+
+
+%% means regressions by year
+for rix = 1:length(region_sublist)
+    IceFree_pixels_MEANSy.(region_sublist{rix})=permute(mean(IceFree_pixels_yearsN.(region_sublist{rix}),1,'omitnan'),[2 1]);
+    AnnualNPPRate_pixels_MEANy.(region_sublist{rix})=permute(mean(AnnualNPPRate_pixels_years.(region_sublist{rix}),1,'omitnan'),[2 1]);
+    AnAvDayRate_pixels_MEANy.(region_sublist{rix})=permute(mean(AnAvDayRate_pixels_years.(region_sublist{rix}),1,'omitnan'),[2 1]);
+end
+for rix=1:length(region_sublist)
+    Regression.tbl_pixels.(region_sublist{rix})=table(IceFree_pixels_MEANSy.(region_sublist{rix}),...
+        AnnualNPPRate_pixels_MEANy.(region_sublist{rix}),AnAvDayRate_pixels_MEANy.(region_sublist{rix}),...
+        'VariableNames',{'IceFreeM','AnNPPrateM','AnAvDayRateM'});
+    
+    Regression.lm_PixelMy.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnNPPrateM~IceFreeM');
+    disp(Regression.lm_PixelMy.(region_sublist{rix}))
+    Regression.lm_PixeldMy.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnAvDayRateM~IceFreeM');
+    disp(Regression.lm_PixeldMy.(region_sublist{rix}))
+    % Regression.lm_Pixelmedian.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMedian~IceFreeMedian');
+    %  disp(Regression.lm_Pixelmedian.(region_sublist{rix}))
+end
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_PixelMy.(region_sublist{rix}))
+    l=legend;
+    l.Location='southeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Annual NPP (g m^{-2})','Interpreter','tex')
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_PixeldMy.(region_sublist{rix}))
+    l=legend;
+    l.Location='northeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Mean daily NPP (g m^{-2} d^{-1})','Interpreter','tex')
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+
+%% Mean IFE vs #IFd
+for rix=1:length(region_sublist)
+    Regression.tbl_pixels.(region_sublist{rix})=table(IceFree_pixels_MEANSy.(region_sublist{rix}),...
+        Regression.MeanIFE.(region_sublist{rix}),...
+        'VariableNames',{'IceFreeM','MeanIFE'});
+    
+    Regression.lm_.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'MeanIFE~IceFreeM');
+    disp(Regression.lm_.(region_sublist{rix}))
+end
+figure;
+t = tiledlayout(2,2)
+for rix=1:length(region_sublist)
+nexttile
+plot(Regression.lm_.(region_sublist{rix}))
+    l=legend;
+    l.Location='southeast';
+    title((region_sublist{rix}))
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Mean Ice Free Extent (10^6 km^2)','Interpreter','tex')
+% nexttile
+% plot(Regression.lm_Pixelmean.(region_sublist{rix}))
+% nexttile
+% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
+end
+for rix=1:length(region_sublist)
+    [rho,pval] = corr(IceFree_pixels_MEANSy.(region_sublist{rix}),...
+        Regression.MeanIFE.(region_sublist{rix}), 'type', 'Spearman')
+end
+
+%% Boxplots
+
+figure;
+tiledlayout(2,6)
+nexttile(5,[1 2])
+rix=1;
+boxplot(IceFree_pixels_years.(region_sublist{rix}))
+    title((region_sublist{rix}))
+nexttile(1,[1 1])
+boxplot(IceFree_pixels_years_COL.(region_sublist{rix}))
+ylim([0 250])
+    title({'All' (region_sublist{rix})})
+    
+nexttile(7,[1 2])
+rix=2;
+boxplot(IceFree_pixels_years.(region_sublist{rix}))
+    title((region_sublist{rix}))
+nexttile(2,[1 1])
+boxplot(IceFree_pixels_years_COL.(region_sublist{rix}))
+ylim([0 250])
+    title({'All' (region_sublist{rix})})
+
+    nexttile(9,[1 2])
+    rix=3;
+boxplot(IceFree_pixels_years.(region_sublist{rix}))
+    title((region_sublist{rix}))
+nexttile(3,[1 1])
+boxplot(IceFree_pixels_years_COL.(region_sublist{rix}))
+ylim([0 250])
+    title({'All' (region_sublist{rix})})
+
+    nexttile(11,[1 2])
+    rix=4;
+boxplot(IceFree_pixels_years.(region_sublist{rix}))
+    title((region_sublist{rix}))
+nexttile(4,[1 1])
+boxplot(IceFree_pixels_years_COL.(region_sublist{rix}))
+ylim([0 250])
+    title({'All' (region_sublist{rix})})
+
+%% MEANS... 
 for rix = 1:length(region_sublist)
 clearvars find*
 IceFree_pixels_years.(region_sublist{rix})(IceFree_pixels_years.(region_sublist{rix})==0)=NaN;
@@ -223,7 +500,8 @@ IceFree_pixels_years.(region_sublist{rix})(IceFree_pixels_years.(region_sublist{
 %     IceFree_pixels_years_median.(region_sublist{rix})=median(IceFree_pixels_years.(region_sublist{rix}),2,'omitnan');
     AnnualNPPRate_pixels_years_mean.(region_sublist{rix})=mean(AnnualNPPRate_pixels_years.(region_sublist{rix}),2,'omitnan');
 %     AnnualNPPRate_pixels_years_median.(region_sublist{rix})=median(AnnualNPPRate_pixels_years.(region_sublist{rix}),2,'omitnan');
-    
+        AnnualNPPRate_pixels_years_mean.(region_sublist{rix})=mean(AnnualNPPRate_pixels_years.(region_sublist{rix}),2,'omitnan');
+
 %     if rix == 2
 %         findWAPtip=find(AnnualNPPRate_pixels_years_mean.(region_sublist{rix})>200);
 %         IceFree_pixels_years_mean.(region_sublist{rix})(findWAPtip)=[];
@@ -261,28 +539,3 @@ end
 [rho,pval] = corr(IceFree_pixels_years_mean.(region_sublist{1}),AnnualNPPRate_pixels_years_mean.(region_sublist{1}), 'type', 'Spearman')
 [rho,pval] = corr(IceFree_pixels_years_mean.(region_sublist{2}),AnnualNPPRate_pixels_years_mean.(region_sublist{2}), 'type', 'Spearman')
 [rho,pval] = corr(IceFree_pixels_years_mean.(region_sublist{3}),AnnualNPPRate_pixels_years_mean.(region_sublist{3}), 'type', 'Spearman')
-
-%% Regression
-for rix=1:length(region_sublist)
-Regression.lm_Pixel.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnNPPrate~IceFree');
- disp(Regression.lm_Pixel.(region_sublist{rix}))
-Regression.lm_Pixelmean.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMean~IceFreeMean');
- disp(Regression.lm_Pixelmean.(region_sublist{rix}))
-% Regression.lm_Pixelmedian.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMedian~IceFreeMedian');
-%  disp(Regression.lm_Pixelmedian.(region_sublist{rix}))
-end
-
-figure;
-t = tiledlayout(4,2)
-for rix=1:length(region_sublist)
-nexttile
-plot(Regression.lm_Pixel.(region_sublist{rix}))
-nexttile
-plot(Regression.lm_Pixelmean.(region_sublist{rix}))
-% nexttile
-% plot(Regression.lm_Pixelmedian.(region_sublist{2}))
-end
-
-for rix = 1:length(region_sublist)
-    [rho.(region_sublist{rix}),p.(region_sublist{rix})]=corr(AnnualNPPRate_pixels_years_mean.(region_sublist{rix}),IceFree_pixels_years_mean.(region_sublist{rix}),'Type','Pearson')
-end
