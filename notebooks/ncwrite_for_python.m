@@ -18,7 +18,8 @@ cd ../interim/
 
 clearvars -except datetime_mid_2014onwards cafe_npp_2014onwards lat lon
 
-filename='npp_2014onwards.nc';
+cafe_npp_2014onwards(cafe_npp_2014onwards<0)=NaN;
+filename='npp_2014onwards_nans.nc';
 delete(filename)
 lon_att.standard_name='lon';
 lon_att.long_name='longitude';
