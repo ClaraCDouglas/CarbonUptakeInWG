@@ -201,37 +201,47 @@ end
 
 close(figure(10))
 figure(10);
-tiledlayout(2,2)
+t=tiledlayout(2,2)
 anpos=[0.1, 0.82, 0.1, 0.1;0.55, 0.82, 0.1, 0.1;0.1, 0.34, 0.1, 0.1;0.55, 0.34, 0.1, 0.1];
 for rix = 1:length(region_sublist)
     nexttile
-    plt=plot(Regression.lmNPPIFE.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA
+    plt=plot(Regression.lmRateIFE.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA
     hold on
-    scatter(Regression.MeanIFE.(region_sublist{rix}),Regression.NPP_AnTot.(region_sublist{rix}),40,Regression.IFDav.(region_sublist{rix}),'filled') %lmNPPIFA %lmRateIFA %lmGSRateIFA
+    scatter(Regression.MeanIFE.(region_sublist{rix}),Regression.NPP_AnRate.(region_sublist{rix}),40,Regression.IFDav.(region_sublist{rix}),'filled') %lmNPPIFA %lmRateIFA %lmGSRateIFA
     title((region_sublist{rix}))
     cmocean('haline')
     cb=colorbar
+    if rix==2 || rix==4
+    ylabel(cb,'Mean Ice Free Days','FontSize',11);
+    end
     xtxt={'Mean Ice Free Extent (10^6 km^2)'}; %Area
     xlabel(xtxt,'Interpreter','tex')
-    ylabel('Annual NPP (TgC)','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+    ylabel('Annual NPP (gC m^2 a^{-1})','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
     l=legend([plt]);
     l.Location='southeast';
-    if rix==2
-        ylim([-0.2 inf])
-        yline(0,':k')
-    end
+%     if rix==2
+%         ylim([-0.2 inf])
+%         yline(0,':k')
+%     end
     if rix>1
         legend('off')
     end
-    c=Regression.lmNPPIFE.(region_sublist{rix}).Coefficients{1,1};
-    m=Regression.lmNPPIFE.(region_sublist{rix}).Coefficients{2,1};
-    R2=Regression.lmNPPIFE.(region_sublist{rix}).Rsquared.Adjusted;
-    p=Regression.lmNPPIFE.(region_sublist{rix}).Coefficients{2,4};
+%     if rix==1
+%         ylim([100 240])
+%     end
+    c=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{1,1};
+    m=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{2,1};
+    R2=Regression.lmRateIFE.(region_sublist{rix}).Rsquared.Adjusted;
+    p=Regression.lmRateIFE.(region_sublist{rix}).Coefficients{2,4};
     str={'R^2=' num2str(R2),' p=' num2str(p);'NPP=' num2str(m) '*IFE+' num2str(c)};
     str2={strjoin(str(1:2:8));strjoin(str(2:2:8))};
     annotation('textbox', anpos(rix,:),'String',str2,'FitBoxToText','on')
+    if rix==4
+        title('Antarctic Peninsula')
+    end
+    set(gca,'FontSize', 11);
 end
-
+% t.Padding = 'compact';
 
 %% Curvefitting tool
 XX=Regression.MeanIFE.Shelf;
@@ -361,8 +371,8 @@ for aix = 1:length(algorithm)
             temp_AnnualNPPRate=AnnualNPPRate_gperyear(:,:,yix-2002);
             AnnualNPPRate_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_AnnualNPPRate(temp.(region_sublist{rix}).box_logic);
 
-            temp_AnAvDayRate=AnAvDayRate_mgm2d1(:,:,yix-2002);
-            AnAvDayRate_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_AnAvDayRate(temp.(region_sublist{rix}).box_logic);
+%             temp_AnAvDayRate=AnAvDayRate_mgm2d1(:,:,yix-2002);
+%             AnAvDayRate_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_AnAvDayRate(temp.(region_sublist{rix}).box_logic);
         end
     end
 end
@@ -375,16 +385,16 @@ for rix = 1:length(region_sublist)
     
     IceFree_pixels_years_COL.(region_sublist{rix})=reshape(IceFree_pixels_years.(region_sublist{rix}),[],1);
     AnnualNPPRate_pixels_years_COL.(region_sublist{rix})=reshape(AnnualNPPRate_pixels_years.(region_sublist{rix}),[],1);
-    AnAvDayRate_pixels_years_COL.(region_sublist{rix})=reshape(AnAvDayRate_pixels_years.(region_sublist{rix}),[],1);
+%     AnAvDayRate_pixels_years_COL.(region_sublist{rix})=reshape(AnAvDayRate_pixels_years.(region_sublist{rix}),[],1);
     
     findNaN_NPP=isnan(AnnualNPPRate_pixels_years_COL.(region_sublist{rix}));
     findzero_ice=(IceFree_pixels_years_COL.(region_sublist{rix})==0);
-    findNaN_NPPd=isnan(AnAvDayRate_pixels_years_COL.(region_sublist{rix}));
+%     findNaN_NPPd=isnan(AnAvDayRate_pixels_years_COL.(region_sublist{rix}));
     
-        if findNaN_NPP==findzero_ice & findzero_ice==findNaN_NPPd
+        if findNaN_NPP==findzero_ice %& findzero_ice==findNaN_NPPd
             IceFree_pixels_years_COL.(region_sublist{rix})(findNaN_NPP)=[];
             AnnualNPPRate_pixels_years_COL.(region_sublist{rix})(findNaN_NPP)=[];
-            AnAvDayRate_pixels_years_COL.(region_sublist{rix})(findNaN_NPPd)=[];
+%             AnAvDayRate_pixels_years_COL.(region_sublist{rix})(findNaN_NPPd)=[];
         else
             disp('No match')
         end
@@ -396,21 +406,27 @@ end
 for rix=1:length(region_sublist)
     
     Regression.tbl_pixels.(region_sublist{rix})=table(IceFree_pixels_years_COL.(region_sublist{rix}),...
-        AnnualNPPRate_pixels_years_COL.(region_sublist{rix}),AnAvDayRate_pixels_years_COL.(region_sublist{rix}),...
-        'VariableNames',{'IceFree','AnNPPrate','AnAvDayRate'});
+        AnnualNPPRate_pixels_years_COL.(region_sublist{rix}),...
+        'VariableNames',{'IceFree','AnNPPrate'}); %AnAvDayRate_pixels_years_COL.(region_sublist{rix}),...,'AnAvDayRate'
     
     Regression.lm_Pixel.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnNPPrate~IceFree');
     disp(Regression.lm_Pixel.(region_sublist{rix}))
-    Regression.lm_Pixeld.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnAvDayRate~IceFree');
-    disp(Regression.lm_Pixeld.(region_sublist{rix}))
+%     Regression.lm_Pixeld.(region_sublist{rix})=fitlm(Regression.tbl_pixels.(region_sublist{rix}),'AnAvDayRate~IceFree');
+%     disp(Regression.lm_Pixeld.(region_sublist{rix}))
     % Regression.lm_Pixelmedian.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMedian~IceFreeMedian');
     %  disp(Regression.lm_Pixelmedian.(region_sublist{rix}))
 end
 
 figure;
-t = tiledlayout(2,2)
+t = tiledlayout(2,4)
 for rix=1:length(region_sublist)
-nexttile
+    if rix == 1
+        nexttile(2,[1 2])
+    elseif rix==2
+        nexttile(5,[1 2])
+    elseif rix==3
+        nexttile(7,[1 2])
+    end
 plot(Regression.lm_Pixel.(region_sublist{rix}))
     l=legend;
     l.Location='southeast';
@@ -426,7 +442,7 @@ end
 figure;
 t = tiledlayout(2,2)
 for rix=1:length(region_sublist)
-nexttile
+  nexttile  
 plot(Regression.lm_Pixeld.(region_sublist{rix}))
     l=legend;
     l.Location='northeast';

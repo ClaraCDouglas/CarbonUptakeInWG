@@ -13,11 +13,11 @@ else
 end
 
 setup.checkregions=false;
-setup.plotfigures=false;
+setup.plotfigures=true;
 setup.startyear=2002;
 setup.endyear=2020;
-data_daily=true;
-data_8day=false;
+data_daily=false;
+data_8day=true;
 %% load data
 % load sea ice data
 % SeaIce_daily_20022020.mat, SeaIce_8day_20022020.mat
@@ -212,8 +212,6 @@ SeaIce.g_area.Weddell-SeaIce.g_area.OOSRWAPtot
 
 %% 8day analysis
 if data_8day
-    %% Sea Ice Extent
-    %(area of ice-covered i.e. total area of pixels that have >15% sea ice concentration)
     for tix=1:length(time_start_ice8)
         tempice=ice_conc_8day(:,:,tix);
         tempice_reg=tempice(findweddell);
@@ -235,15 +233,22 @@ if data_8day
         icefind=find(tempice_reg>0.15);
         SeaIce.Open.SIExtent(tix,1)=sum(g_area_reg(icefind));
     end
-    SeaIce.Weddell.IceFree_Extent=SeaIce.g_area.Weddell-SeaIce.Weddell.SIExtent;
-    SeaIce.Shelf.IceFree_Extent=SeaIce.g_area.Open-SeaIce.Shelf.SIExtent;
-    SeaIce.Open.IceFree_Extent=SeaIce.g_area.Open-SeaIce.Open.SIExtent;
+    for tix=1:length(time_start_ice8)
+        tempice=ice_conc_8day(:,:,tix);
+        tempice_reg=tempice(findWAP);
+        g_area_reg=g_area(findWAP);
+        icefind=find(tempice_reg>0.15);
+        SeaIce.WAP.SIExtent(tix,1)=sum(g_area_reg(icefind));
+    end
+    for rix = 1:length(region_sublist)
+        SeaIce.(region_sublist{rix}).IceFree_Extent=SeaIce.g_area.(region_sublist{rix})-SeaIce.(region_sublist{rix}).SIExtent;
+    end
     clearvars tempice icefind tix
     
-    % timeseries figures in longform
     if setup.plotfigures
+        % timeseries figures in longform
         figure;
-        t=tiledlayout(3,1);
+        t=tiledlayout(4,1);
         ax1 = nexttile;
         plot(datetime(time_start_ice8),SeaIce.Weddell.SIExtent,'LineWidth',2)
         title('Weddell')
@@ -254,35 +259,35 @@ if data_8day
         ax3=nexttile;
         plot(datetime(time_start_ice8),SeaIce.Open.SIExtent,'LineWidth',2)
         title('Open')
+        ax4=nexttile;
+        plot(datetime(time_start_ice8),SeaIce.WAP.SIExtent,'LineWidth',2)
+        title('WAP')
         title(t,'Sea Ice Extent (km^2)')
     end
+    
     % timeseries superimposed over JASONDJFMAMJ
     % get data arranged in austral years
+    yearrange0320=yearrange(2:end,:);
     temptime=datenum(time_start_ice8);
-    for yix = 2003:2020
-        findyearaus=find(timedec8dayice>yix-0.5 & timedec8dayice<yix+0.5);
-        year = yix;
-        % for yix = 1:length(yearrange0320) % worse coding
-        %     year=yearrange0320(yix)
-        %     findyear1=find(time_start_ice8(:,1)==year-1 & time_start_ice8(:,2)>=7);
-        %     findyear2=find(time_start_ice8(:,1)==year & time_start_ice8(:,2)<=6);
-        %     findyearaus=cat(1,findyear1,findyear2);
-        SeaIce.Weddell.SIExtent_aus(:,year-2002)=SeaIce.Weddell.SIExtent(findyearaus);
-        SeaIce.Shelf.SIExtent_aus(:,year-2002)=SeaIce.Shelf.SIExtent(findyearaus);
-        SeaIce.Open.SIExtent_aus(:,year-2002)=SeaIce.Open.SIExtent(findyearaus);
+    for rix = 1:length(region_sublist)
+        SeaIce.(region_sublist{rix}).SIExtent_aus=NaN(46,length(yearrange0320));
+        for yix = 2003:2020
+            findyearaus=find(timedec8dayice_start>yix-0.5 & timedec8dayice_start<yix+0.5);
+            year = yix;
+            SeaIce.(region_sublist{rix}).SIExtent_aus(1:length(findyearaus),year-2002)=SeaIce.(region_sublist{rix}).SIExtent(findyearaus);
+        end
+        SeaIce.(region_sublist{rix}).austral_meanmonth=mean(SeaIce.(region_sublist{rix}).SIExtent_aus,2);
     end
-    SeaIce.Weddell.austral_meanmonth=mean(SeaIce.Weddell.SIExtent_aus,2);
-    % get time for x-axis
     time_start_ice8_datetime=datenum(time_start_ice8);
     time_end_ice8_datetime=datenum(time_end_ice8);
-    time_av_ice8=mean([time_start_ice8_datetime, time_end_ice8_datetime],2)
+    time_av_ice8=mean([time_start_ice8_datetime, time_end_ice8_datetime],2);
     time_av_ice8_datetime=datetime(time_av_ice8,'ConvertFrom','datenum');
 
+    % get time for x-axis
     if setup.plotfigures
-        yearrange0320=yearrange(2:end,:);
-        x_months= {'J','A','S','O','N','D','J','F','M','A','M','J'};
         linecolors = jet(length(yearrange0320));
         % plot figure - jet colourful
+        x_months= {'J','A','S','O','N','D','J','F','M','A','M','J'};
         figure;
         for cix=1:length(yearrange0320)
             plot(SeaIce.Weddell.SIExtent_aus(:,cix),'Color',linecolors(cix,:),'LineWidth',1.5);
@@ -290,7 +295,7 @@ if data_8day
         end
         set(gca,'xtick',[1 5 8 12 16 20 24 28 31 35 39 43],'xticklabel',x_months,'FontSize',14)
         plot(SeaIce.Weddell.austral_meanmonth,'Color','k','LineWidth',3,'LineStyle',':');
-        xlim([0.8 46.2])
+        %xlim([0.8 366.2])
         ylabel('Sea Ice Extent (km^2)','FontSize',14)
         title('Weddell Gyre Sea Ice Extent','FontSize',14)
         cmap = colormap(jet(length(yearrange0320)));
@@ -323,7 +328,7 @@ if data_8day
         end
         set(gca,'xtick',[1 5 8 12 16 20 24 28 31 35 39 43],'xticklabel',x_months,'FontSize',14)
         plot(SeaIce.Weddell.austral_meanmonth,'Color','k','LineWidth',3,'LineStyle',':');
-        xlim([0.8 46.2])
+        %xlim([0.8 366])
         ylabel('Sea Ice Extent (km^2)','FontSize',14)
         title('Weddell Gyre Sea Ice Extent from 8-day means','FontSize',14)
         cmap = colormap(linecolors_grey);
@@ -332,82 +337,98 @@ if data_8day
     end
     %% Sea ice area
     for rix = 1:length(region_sublist)
-        SeaIce.(regionfindlist{rix}).ice_covered_area=NaN(length(time_start_ice8),1);
-        SeaIce.(regionfindlist{rix}).ice_free_area=NaN(length(time_start_ice8),1);
-        SeaIce.(regionfindlist{rix}).ice_covered_prop=NaN(length(time_start_ice8),1);
+        SeaIce.(region_sublist{rix}).ice_covered_area=NaN(length(time_start_ice8),1);
+        SeaIce.(region_sublist{rix}).ice_free_area=NaN(length(time_start_ice8),1);
+        SeaIce.(region_sublist{rix}).ice_covered_prop=NaN(length(time_start_ice8),1);
     end
-    
-    for ix=1:length(time_start_ice8)
-        testice=ice_conc_8day(:,:,ix); % select time slice
-        icefind=find(testice<=0.15);
-        testice(icefind)=0;
-        weightice=testice.*g_area; % get the area per pixel covered by ice
-        SeaIce.Weddell.ice_covered_area(ix,1)=sum(weightice(findweddell),'omitnan'); % total area covered by ice in region
-        SeaIce.Weddell.ice_free_area(ix,1)=SeaIce.g_area.Weddell-SeaIce.Weddell.ice_covered_area(ix,1);
-        SeaIce.Weddell.ice_covered_prop(ix,1)=SeaIce.Weddell.ice_covered_area(ix,1)/SeaIce.g_area.Weddell; % divided by area of region to get proportion of region that is ice covered
-        clearvars testice weightice
-    end
-    
-    % quick compare of SIA and SIE
-    figure;
-    plot(datetime(time_start_ice8),SeaIce.Weddell.SIExtent,'LineWidth',2)
-    title('Weddell Sea Ice Extent vs Sea Ice Area','FontSize',14)
-    hold on
-    plot(datetime(time_start_ice8),SeaIce.Weddell.ice_covered_area,'LineWidth',2)
-    legend('SIE','SIA')
-    ylabel('Ice covered waters (km^2)','FontSize',14)
-    set(gca,'FontSize',14,'XMinorGrid','on')
-    
-    % timeseries superimposed over JASONDJFMAMJ
-    % get data arranged in austral years
-    for yix = 2003:2020
-        findyearaus=find(timedec8dayice>yix-0.5 & timedec8dayice<yix+0.5);
-        year = yix;
-        % for yix = 1:length(yearrange0320) % worse coding
-        %     year=yearrange0320(yix)
-        %     findyear1=find(time_start_ice8(:,1)==year-1 & time_start_ice8(:,2)>=7);
-        %     findyear2=find(time_start_ice8(:,1)==year & time_start_ice8(:,2)<=6);
-        %     findyearaus=cat(1,findyear1,findyear2);
-        SeaIce.Weddell.SIArea_aus(:,year-2002)=SeaIce.Weddell.ice_covered_area(findyearaus);
-        SeaIce.Shelf.SIArea_aus(:,year-2002)=SeaIce.Shelf.ice_covered_area(findyearaus);
-        SeaIce.Open.SIArea_aus(:,year-2002)=SeaIce.Open.ice_covered_area(findyearaus);
-    end
-    SeaIce.Weddell.SIArea_aus_meanmonth=mean(SeaIce.Weddell.SIArea_aus,2);
-    SeaIce.Shelf.SIArea_aus_meanmonth=mean(SeaIce.Shelf.SIArea_aus,2);
-    SeaIce.Open.SIArea_aus_meanmonth=mean(SeaIce.Open.SIArea_aus,2);
-    
-    % with most lines grey
-    linecolors_grey=linecolors;
-    jetty=parula(10);
-    for yix = 1:length(yearrange0320)
-        year=yearrange0320(yix);
-        if year==2014
-            linecolors_grey(yix,:)=jetty(2,:);
-        elseif year ==2015
-            linecolors_grey(yix,:)=jetty(4,:);
-        elseif year ==2016
-            linecolors_grey(yix,:)=jetty(6,:);
-        elseif year ==2017
-            linecolors_grey(yix,:)=jetty(8,:);
-        elseif year ==2018
-            linecolors_grey(yix,:)=jetty(10,:);
-        else
-            linecolors_grey(yix,:)=0.8;
+
+    for rix = 1:length(region_sublist)
+        for ix=1:length(time_start_ice8)
+            testice=ice_conc_8day(:,:,ix); % select time slice
+            icefind=find(testice<=0.15);
+            testice(icefind)=0;
+            weightice=testice.*g_area; % get the area per pixel covered by ice
+            SeaIce.Weddell.ice_covered_area(ix,1)=sum(weightice(findweddell),'omitnan'); % total area covered by ice in region
+            SeaIce.Shelf.ice_covered_area(ix,1)=sum(weightice(findshelf),'omitnan'); % total area covered by ice in region
+            SeaIce.Open.ice_covered_area(ix,1)=sum(weightice(findopen),'omitnan'); % total area covered by ice in region
+            SeaIce.WAP.ice_covered_area(ix,1)=sum(weightice(findWAP),'omitnan'); % total area covered by ice in region
+            
+            SeaIce.(region_sublist{rix}).ice_free_area(ix,1)=SeaIce.g_area.(region_sublist{rix})-SeaIce.(region_sublist{rix}).ice_covered_area(ix,1);
+            SeaIce.(region_sublist{rix}).ice_covered_prop(ix,1)=SeaIce.(region_sublist{rix}).ice_covered_area(ix,1)/SeaIce.g_area.(region_sublist{rix}); % divided by area of region to get proportion of region that is ice covered
+            clearvars testice weightice
         end
     end
-    figure;
-    for cix=1:length(yearrange0320)
-        plot(SeaIce.Weddell.SIArea_aus(:,cix),'Color',linecolors_grey(cix,:),'LineWidth',2);
-        hold on;
+    
+    if setup.plotfigures
+        % quick compare of SIA and SIE
+        figure;
+        plot(datetime(time_start_ice8),SeaIce.Weddell.SIExtent,'LineWidth',2)
+        title('Weddell Sea Ice Extent vs Sea Ice Area','FontSize',14)
+        hold on
+        plot(datetime(time_start_ice8),SeaIce.Weddell.ice_covered_area,'LineWidth',2)
+        legend('SIE','SIA')
+        ylabel('Ice covered waters (km^2)','FontSize',14)
+        set(gca,'FontSize',14,'XMinorGrid','on')
     end
-    set(gca,'xtick',[1 5 8 12 16 20 24 28 31 35 39 43],'xticklabel',x_months,'FontSize',14)
-    plot(SeaIce.Weddell.SIArea_aus_meanmonth,'Color','k','LineWidth',3,'LineStyle',':');
-    xlim([0.8 46.2])
-    ylabel('Sea Ice Extent (km^2)','FontSize',14)
-    title('Weddell Gyre Sea Ice Area from 8-day means','FontSize',14)
-    cmap = colormap(linecolors_grey);
-    ticks=[0.03125:0.125:0.96875];
-    colorbar('Ticks',[0.03125:0.055:0.96875],'TickLabels',{'2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'})
+    % timeseries superimposed over JASONDJFMAMJ
+    % get data arranged in austral years
+    
+    for rix = 1:length(region_sublist)
+        SeaIce.(region_sublist{rix}).SIArea_aus=NaN(46,length(yearrange0320));
+        for yix = 2003:2020
+            findyearaus=find(timedec8dayice_start>yix-0.5 & timedec8dayice_start<yix+0.5);
+            year = yix;
+            SeaIce.(region_sublist{rix}).SIArea_aus(1:length(findyearaus),year-2002)=SeaIce.(region_sublist{rix}).ice_covered_area(findyearaus);
+        end
+        SeaIce.(region_sublist{rix}).SIArea_aus_meanmonth=mean(SeaIce.(region_sublist{rix}).SIArea_aus,2);
+    end
+    
+    if setup.plotfigures
+        % with most lines grey
+        linecolors_grey=linecolors;
+        jetty=parula(10);
+        for yix = 1:length(yearrange0320)
+            year=yearrange0320(yix);
+            if year==2014
+                linecolors_grey(yix,:)=jetty(2,:);
+            elseif year ==2015
+                linecolors_grey(yix,:)=jetty(4,:);
+            elseif year ==2016
+                linecolors_grey(yix,:)=jetty(6,:);
+            elseif year ==2017
+                linecolors_grey(yix,:)=jetty(8,:);
+            elseif year ==2018
+                linecolors_grey(yix,:)=jetty(10,:);
+            else
+                linecolors_grey(yix,:)=0.8;
+            end
+        end
+        figure;
+        for cix=1:length(yearrange0320)
+            cix;
+            plot(SeaIce.Weddell.SIArea_aus(:,cix),'Color',linecolors_grey(cix,:),'LineWidth',2);
+            hold on;
+        end
+        set(gca,'xtick',[1 5 8 12 16 20 24 28 31 35 39 43],'xticklabel',x_months,'FontSize',14)
+        plot(SeaIce.Weddell.SIArea_aus_meanmonth,'Color','k','LineWidth',3,'LineStyle',':');
+%         xlim([0.8 366])
+        ylabel('Sea Ice Extent (km^2)','FontSize',14)
+        title('Weddell Gyre Sea Ice Area from 8-day means','FontSize',14)
+        cmap = colormap(linecolors_grey);
+        ticks=[0.03125:0.125:0.96875];
+        colorbar('Ticks',[0.03125:0.055:0.96875],'TickLabels',{'2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'})
+    end
+    % clearvars -except data* SeaIce time* yearrange*
+    
+    desktop=0;
+    laptop=1;
+    if desktop
+        cd 'C:\Users\Clara Douglas\OneDrive - University of Southampton\PhD\Projects\carbonuptakeinwg\data\processed' % desktop
+    elseif laptop
+        cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
+    end
+    clearvars desktop laptop filenames BoxIN *ix *Box g* find* temp* ticks
+    save('SeaIce8day_Apr22_wWAP.mat','SeaIce','time_start_ice8','time_end_ice8','timedec8dayice','timedec8dayice_start','timedec8dayice_end','yearrange','yearrange0320','data_8day','data_daily'); %SeaIceDaily_Jan22_wWAP
 end
 
 %% daily analysis

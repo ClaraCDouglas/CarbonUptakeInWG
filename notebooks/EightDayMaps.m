@@ -48,14 +48,14 @@ colors={'k','r'};
 cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\figures\TimeSlice_perYear_Maps\'
 NPP=1;
 
-for yix=2003:2020
+for yix=2003%:2020
     yyix=yix-2002;
     addno=(yyix-1)*46;
     f=figure(yyix+20); 
 %     f = figure('visible','off');
     tlo=tiledlayout('flow');
     f.WindowState='maximized';
-    for ix=addno+1:1:addno+46%addno+9:1:addno+35
+    for ix=26%addno+1:1:addno+46%addno+9:1:addno+35
         ax=nexttile(tlo);
         
         switch NPP
@@ -139,14 +139,15 @@ for yix=2003:2020
         end
         pcolor(lon_wg,lat_wg,temptemp); shading flat
         hold on
-        SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[0.8 0.4 0],'linewi',2);%'#80471C'
-        O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.6 0.2 0.8],'linewi',2);%,'LineStyle','--')
-        WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0 0.4 0.2],'linewi',2);%,'LineStyle','--')
+        c=[[.21 .44 .31];[0.8 0.4 0];[0.44 0.78 0.91]];
+        SR_line=plot(ShelfBox(:,1),ShelfBox(:,2),'color',[.21 .44 .31],'linewi',4);%'#80471C'
+        O_line=plot(OOBox(:,1),OOBox(:,2),'color',[0.44 0.4 0.91],'linewi',4);%,'LineStyle','--')
+        WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0.8 0.4 0],'linewi',4);%,'LineStyle','--')
         for icex=1:length(anindex)
             v=[anindex(icex),anindex(icex)];
             [c,h]=contourm(g_lat,g_lon,ice_conc_8day(:,:,ix),v,'LineWidth',2,'Color',colors{icex}); %
         end
-        xlim([-70 35]); ylim([-80 -50])
+        xlim([-70 40]); ylim([-80 -40])
         switch NPP
             case 1 %rate
                 caxis([0 1000])
