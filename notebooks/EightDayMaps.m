@@ -3,14 +3,15 @@ load('box_lat_lons.mat', 'andrex_box')
 ShelfBox=ShelfMinusWAPJan22;%shelf_region_ANDbox
 OOBox=OpenOceanMinusWAPJan22;%open_ocean_ANDbox
 WAPBox=WAPJan22;
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'cafe_npp_tot_gC_nans_8day')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'cafe_npp_all_8day')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'lat_wg')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'lon_wg')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'time_end_all')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'time_start_all')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'timedec8day')
-load('cafe_8day_imported_eqWG_withNaNs.mat', 'timedec8day_end')
+yearrange0321=permute(2003:1:2021,[2,1]);
+load('cafe_8day_imported_May22.mat', 'cafe_npp_tot_gC_nans_8day')
+load('cafe_8day_imported_May22.mat', 'cafe_npp_all_8day')
+load('cafe_8day_imported_May22.mat', 'lat_wg')
+load('cafe_8day_imported_May22.mat', 'lon_wg')
+load('cafe_8day_imported_May22.mat', 'time_end_all')
+load('cafe_8day_imported_May22.mat', 'time_start_all')
+load('cafe_8day_imported_May22.mat', 'timedec8day')
+load('cafe_8day_imported_May22.mat', 'timedec8day_end')
 data_daily=false;
 data_8day=true;
 cd 'D:\Data\SeaIceNIMBUS'; % SeaIce_daily_20022020.mat, SeaIce_8day_20022020.mat
@@ -18,18 +19,19 @@ if data_daily
     load('SeaIce_daily_20022020.mat')
     load('SeaIce_8day_20022020.mat','g_area','g_lat','g_lon')
 elseif data_8day
-    load('SeaIce_8day_20022020.mat')
+    cd E:\Data\SeaIceV4\sidads.colorado.edu\AllFiles
+    load('SICv4_8day.mat')
 end
 if data_8day
     % time_start_all=time_start_all(1:848,:); % NPP time_start for each 8 day slice ending in 2020
     time_start_ice8=time_start_ice8(24:end,:); %there are more time slices for the sea ice data because the 2nd-4th weeks in Aug 2020 are missing from the NPP dataset
     time_end_ice8=time_end_ice8(24:end,:); %there are more time slices for the sea ice data because the 2nd-4th weeks in Aug 2020 are missing from the NPP dataset
-    ice_conc_8day=ice_conc_8day(:,:,24:end); % remove ice data for Jan-June 2002 (no NPP data for that)
+    SICv4_8day=SICv4_8day(:,:,24:end); % remove ice data for Jan-June 2002 (no NPP data for that)
     
     % if removing the data that is also missing from NPP data:
     time_start_ice8(834:836,:)=[];
     time_end_ice8(834:836,:)=[];
-    ice_conc_8day(:,:,834:836)=[];
+    SICv4_8day(:,:,834:836)=[];
     
     %make dec time %(and datenum)
     timedec8dayice_start=decyear(time_start_ice8);
@@ -48,14 +50,14 @@ colors={'k','r'};
 cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\figures\TimeSlice_perYear_Maps\'
 NPP=1;
 
-for yix=2003%:2020
+for yix=2003:2020
     yyix=yix-2002;
     addno=(yyix-1)*46;
     f=figure(yyix+20); 
 %     f = figure('visible','off');
     tlo=tiledlayout('flow');
     f.WindowState='maximized';
-    for ix=26%addno+1:1:addno+46%addno+9:1:addno+35
+    for ix=addno+1:1:addno+46%addno+9:1:addno+35
         ax=nexttile(tlo);
         
         switch NPP
@@ -75,7 +77,7 @@ for yix=2003%:2020
         
         for icex=1:length(anindex)
             v=[anindex(icex),anindex(icex)];
-            [c,h]=contourm(g_lat,g_lon,ice_conc_8day(:,:,ix),v,'LineWidth',2,'Color',colors{icex}); %
+            [c,h]=contourm(g_lat,g_lon,SICv4_8day(:,:,ix),v,'LineWidth',2,'Color',colors{icex}); %
         end
         xlim([-70 35]); ylim([-80 -50])
         switch NPP
@@ -95,7 +97,7 @@ for yix=2003%:2020
         case 2
             c.Label.String='Total NPP (gC)';%Total NPP (gC)%Daily NPP (mg m^{-2} d^{-1}
     end
-    sgti=num2str(yearrange0320(yyix));
+    sgti=num2str(yearrange0321(yyix));
     sgtitle(sgti)
     nexttile;
     for icex=1:length(anindex)
@@ -112,8 +114,8 @@ for yix=2003%:2020
         case 2
             hgexport(gcf, ['Austral_Total_',num2str(yix),'.jpg'], hgexport('factorystyle'), 'Format', 'jpeg');
     end
-    close all
 end
+    close all
 
 
 NPP=1;
@@ -145,7 +147,7 @@ for yix=2003:2020
         WAP_line=plot(WAPBox(:,1),WAPBox(:,2),'color',[0.8 0.4 0],'linewi',4);%,'LineStyle','--')
         for icex=1:length(anindex)
             v=[anindex(icex),anindex(icex)];
-            [c,h]=contourm(g_lat,g_lon,ice_conc_8day(:,:,ix),v,'LineWidth',2,'Color',colors{icex}); %
+            [c,h]=contourm(g_lat,g_lon,SICv4_8day(:,:,ix),v,'LineWidth',2,'Color',colors{icex}); %
         end
         xlim([-70 40]); ylim([-80 -40])
         switch NPP
@@ -165,7 +167,7 @@ for yix=2003:2020
         case 2
             cb.Label.String='Total NPP (gC)';%Total NPP (gC)%Daily NPP (mg m^{-2} d^{-1}
     end
-    sgti=num2str(yearrange0320(yyix));
+    sgti=num2str(yearrange0321(yyix));
     sgtitle(sgti)
     nexttile;
     for icex=1:length(anindex)
@@ -179,9 +181,9 @@ for yix=2003:2020
     % name=['figure',num2str(yix),'.jpg']
     switch NPP
         case 1 %rate
-            hgexport(gcf, ['Visible_DayRate_',num2str(yix),'.jpg'], hgexport('factorystyle'), 'Format', 'jpeg');
+            hgexport(gcf, ['Visible_DayRate_v4',num2str(yix),'.jpg'], hgexport('factorystyle'), 'Format', 'jpeg');
         case 2
-            hgexport(gcf, ['Visible_Total_',num2str(yix),'.jpg'], hgexport('factorystyle'), 'Format', 'jpeg');
+            hgexport(gcf, ['Visible_Total_v4',num2str(yix),'.jpg'], hgexport('factorystyle'), 'Format', 'jpeg');
     end
     close all
 end
@@ -203,7 +205,7 @@ for yix=2017:2018%2003:2020
         %     patchm(antarctica.Lat, antarctica.Lon, [0.5 1 0.5])
         %     geoshow(antarctica)
         hold on
-        pcolorm(g_lat,g_lon,ice_conc_8day(:,:,ix))
+        pcolorm(g_lat,g_lon,SICv4_8day(:,:,ix))
         ti=datetime(time_start_all(ix,1:3)); % should put the mid-date instead
         title(datestr(ti))
     end
