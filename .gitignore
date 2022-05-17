@@ -79,6 +79,9 @@ target/
 data/processed/*imported*.mat
 data/processed/SeaIce_daily_8day_20022020.mat
 data/processed/*Array
+data/processed/*.pdf
+data/processed/*.eps
+data/processed/*.png
 data/raw/
 data/interim/
 notebooks/*.asv
