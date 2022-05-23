@@ -12,8 +12,8 @@ elseif laptop
     addpath(genpath('C:\Users\ccd1n18\Documents\Projects\m_map'));
     addpath(genpath('C:\Users\ccd1n18\Documents\Projects\SetCMap'));
 end
-load('ProcessedData_8day_Feb22.mat') %ProcessedData_8day_Jan22
-load('SeaIceDaily_Jan22_wWAPauto.mat') %SeaIceDaily_Jan22
+load('ProcessedData_8day_May22.mat') %ProcessedData_8day_Jan22
+load('SeaIcev4_8day_May22.mat') %SeaIceDaily_Jan22
 close all
 
 % Make max-min SIE
@@ -29,11 +29,12 @@ for rix = 1:length(region_sublist)
         title((region_sublist{rix}))
     end
     % ylim([3.5e6 6e6])
-    xticks([1:1:18])
-    xticklabels(2003:1:2020)
+    xticks([1:1:19])
+    xticklabels(2003:1:2021)
     xtickangle(45)
 end
 sgtitle('Maximum and minimum sea ice extent and difference between winter max and summer min')
+yearrange0321=permute(2003:1:2021,[2,1]);
 
 % make structure of all variables for corr testing
 for rix = 1:length(region_sublist)
@@ -54,7 +55,7 @@ Regression.NPP_AvGSRate.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublis
 Regression.IFDav.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).IFD_av; % average daily rate of NPP (mgC m^-2 d^-1)
 Regression.IFDmax.(region_sublist{rix})=OceanProd_8day.cafe.(region_sublist{rix}).IFD_max; % average daily rate of NPP (mgC m^-2 d^-1)
 
-Regression.Year=yearrange0320;
+Regression.Year=yearrange0321;
 Regression.NPP_AnTot_sqrt.(region_sublist{rix})=sqrt(OceanProd_8day.cafe.(region_sublist{rix}).NPP_tot_TgC_annual(2:end,2));
 
 end
