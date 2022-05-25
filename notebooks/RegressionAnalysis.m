@@ -647,7 +647,8 @@ for rix=1:length(region_sublist)
         plot(x1,y1,'k','LineWidth',1)
     end
     plot(midbin.(region_sublist{rix}),IFDbinMeanNPP.(region_sublist{rix}),'b-o','MarkerFaceColor','b')
-    
+    %axis=gca; uistack(gca,'top');
+    set(gca,'Layer','top');
 end
 txt={'Density distribution of IFD and Area Normalised Annual NPP','Blue circles represent mean NPP in each IFD bin','Black lines are the annual regressions'};
 sgtitle(txt)
