@@ -111,11 +111,11 @@ Regression.tblmeans.all=cat(1,Regression.tblmeans.Weddell,Regression.tblmeans.Sh
 
 %% Regression
 for rix = 1:length(region_sublist)
-Regression.tbl.(region_sublist{rix})=table(Regression.Year,Regression.MeanSIE.(region_sublist{rix}),Regression.MeanIFE.(region_sublist{rix}),...
-    Regression.MeanSIA.(region_sublist{rix}),Regression.MeanIFA.(region_sublist{rix}),Regression.SIE_dif.(region_sublist{rix}),...
-    Regression.NPP_AnTot.(region_sublist{rix}),Regression.NPP_AnRate.(region_sublist{rix}),Regression.NPP_AvGSRate.(region_sublist{rix}),...
-    Regression.IFDav.(region_sublist{rix}),Regression.IFDmax.(region_sublist{rix}),...
-    Regression.NPP_AnTot_sqrt.(region_sublist{rix}),...
+Regression.tbl.(region_sublist{rix})=table(Regression.Year(1:18),Regression.MeanSIE.(region_sublist{rix})(1:18),Regression.MeanIFE.(region_sublist{rix})(1:18),...
+    Regression.MeanSIA.(region_sublist{rix})(1:18),Regression.MeanIFA.(region_sublist{rix})(1:18),Regression.SIE_dif.(region_sublist{rix})(1:18),...
+    Regression.NPP_AnTot.(region_sublist{rix})(1:18),Regression.NPP_AnRate.(region_sublist{rix})(1:18),Regression.NPP_AvGSRate.(region_sublist{rix})(1:18),...
+    Regression.IFDav.(region_sublist{rix})(1:18),Regression.IFDmax.(region_sublist{rix})(1:18),...
+    Regression.NPP_AnTot_sqrt.(region_sublist{rix})(1:18),...
     'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
 
 % Regression.lmNPPSIE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE');
@@ -124,6 +124,10 @@ Regression.tbl.(region_sublist{rix})=table(Regression.Year,Regression.MeanSIE.(r
 %       Total NPP vs IFE/IFA
 Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE');
 Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA');
+% quadratic
+% Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE','purequadratic');
+% Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA','purequadratic');
+fit
 %       Area-normalised NPP vs IFE
 Regression.lmRateIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~IFE');
 %       Mean daily rate vs IFA
@@ -147,9 +151,9 @@ model_list={'lmNPPIFE','lmNPPIFA','lmRateIFE','lmGSRateIFA','lmNPPIFD','lmNPPIFD
 %       DISPLAY MODEL OUTPUTS
 for rix = 1:length(region_sublist)
 % disp(Regression.lmNPPSIE.(region_sublist{rix}))
-% disp(Regression.lmNPPIFE.(region_sublist{rix}))
+ disp(Regression.lmNPPIFE.(region_sublist{rix}))
 % disp(Regression.lmNPPSIA.(region_sublist{rix}))
-% disp(Regression.lmNPPIFA.(region_sublist{rix}))
+ disp(Regression.lmNPPIFA.(region_sublist{rix}))
 % disp(Regression.lmRateIFA.(region_sublist{rix}))
 % disp(Regression.lmNPPdif.(region_sublist{rix}))
 % disp(Regression.lmRatedif.(region_sublist{rix}))
@@ -157,20 +161,146 @@ for rix = 1:length(region_sublist)
 % disp(Regression.lmNPPIFD.(region_sublist{rix}))
 % disp(Regression.lmNPPIFDmax.(region_sublist{rix}))
 % disp(Regression.lmNPP_IFAIFD.(region_sublist{rix}))
-disp(Regression.lmNPP_IFAIFDtest.(region_sublist{rix}))
+%disp(Regression.lmNPP_IFAIFDtest.(region_sublist{rix}))
 % disp(Regression.lmRateIFD.(region_sublist{rix}))
 end
 
 %       AIC
 for rix = 1:length(region_sublist)
-    for mix=1:length(model_list)
+    for mix=1:2%length(model_list)
         disp([(region_sublist{rix}) (model_list{mix})])
         Regression.(model_list{mix}).(region_sublist{rix}).ModelCriterion.AIC
     end
 end
 
+% quadratic
+for rix = 1:length(region_sublist)
+Regression.tblIFEquad.(region_sublist{rix})=table(Regression.MeanIFE.(region_sublist{rix})(1:18),...
+    Regression.NPP_AnTot.(region_sublist{rix})(1:18),...
+    'VariableNames',{'IFE','NPP'}); 
+Regression.tblIFAquad.(region_sublist{rix})=table(Regression.MeanIFA.(region_sublist{rix})(1:18),...
+    Regression.NPP_AnTot.(region_sublist{rix})(1:18),...
+    'VariableNames',{'IFA','NPP'}); 
 
+%       Total NPP vs IFE/IFA
+Regression.lmNPPIFEquad.(region_sublist{rix})=fitlm(Regression.tblIFEquad.(region_sublist{rix}),'purequadratic');
+% Regression.lmNPPIFAquad.(region_sublist{rix})=fitlm(Regression.tblIFAquad.(region_sublist{rix}),'purequadratic');
+ disp(Regression.lmNPPIFEquad.(region_sublist{rix}))
+%  disp(Regression.lmNPPIFEquad.(region_sublist{rix}))
 
+ 
+end
+%plot quadratic
+figure;
+tiledlayout(2,2)
+anpos=[0.1, 0.8, 0.1, 0.1;0.55, 0.8, 0.1, 0.1;0.1, 0.3, 0.1, 0.1;0.55, 0.3, 0.1, 0.1];
+for rix = 1%:length(region_sublist)
+    nexttile
+    plot(Regression.lmNPPIFEquad.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA %lmRateIFD
+    title((region_sublist{rix}))
+    xtxt={'Mean Ice Free Extent (10^6 km^2)'}; %Mean Ice Free Area (10^6 km^2) %Average # Ice Free Days
+    xlabel(xtxt,'Interpreter','tex')
+    ylabel('Annual NPP (TgC)','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+legend('off')
+    %     l=legend;
+%     l.Location='southeast';
+    if rix==2 ||rix==4
+        ylim([-0.2 inf])
+        yline(0,':k')
+    end
+%     a=Regression.lmNPPIFEquad.(region_sublist{rix}).Coefficients{1,1};
+%     b=Regression.lmNPPIFEquad.(region_sublist{rix}).Coefficients{2,1};
+%     c=Regression.lmNPPIFEquad.(region_sublist{rix}).Coefficients{3,1};
+%     R2=Regression.lmNPPIFEquad.(region_sublist{rix}).Rsquared.Adjusted;
+%     p=Regression.lmNPPIFEquad.(region_sublist{rix}).Coefficients{2,4};
+%     str={'R^2=' num2str(R2),' p=' num2str(p);'NPP=' num2str(a) '+' num2str(b) '*IFE+' num2str(c) '*IFE^2'};
+%     str2={strjoin(str(1:2:8));strjoin(str(2:2:8))};
+%     annotation('textbox', anpos(rix,:),'String',str2,'FitBoxToText','on')
+hold on
+if rix==1
+    xtest=[1.5:0.01:2.3];
+    ytest=(-815.4644)+(973.4995.*xtest)-(231.8130.*(xtest.*xtest));
+   plot(xtest,ytest,'k')
+end
+end
+for rix = 1:length(region_sublist)
+    disp(Regression.lmNPPIFE.(region_sublist{rix}))
+    Regression.lmNPPIFE.(region_sublist{rix}).ModelCriterion.AIC
+    disp(Regression.lmNPPIFEquad.(region_sublist{rix}))
+    Regression.lmNPPIFEquad.(region_sublist{rix}).ModelCriterion.AIC
+    disp(Regression.lmNPPIFElog.(region_sublist{rix}))
+    Regression.lmNPPIFElog.(region_sublist{rix}).ModelCriterion.AIC
+ end
+%log
+for rix = 1:length(region_sublist)
+Regression.tblIFElog.(region_sublist{rix})=table(log(Regression.MeanIFE.(region_sublist{rix})(1:18).*10e6),...
+    log(Regression.NPP_AnTot.(region_sublist{rix})(1:18)),...
+    'VariableNames',{'IFE','NPP'}); 
+% Regression.tblIFAquad.(region_sublist{rix})=table(Regression.MeanIFA.(region_sublist{rix})(1:18),...
+%     Regression.NPP_AnTot.(region_sublist{rix})(1:18),...
+%     'VariableNames',{'IFA','NPP'}); 
+
+%       Total NPP vs IFE/IFA
+Regression.lmNPPIFElog.(region_sublist{rix})=fitlm(Regression.tblIFElog.(region_sublist{rix}),'linear');
+% Regression.lmNPPIFAquad.(region_sublist{rix})=fitlm(Regression.tblIFAquad.(region_sublist{rix}),'purequadratic');
+ disp(Regression.lmNPPIFElog.(region_sublist{rix}))
+%  disp(Regression.lmNPPIFEquad.(region_sublist{rix}))
+ end
+%plot log
+figure;
+tiledlayout(4,3)
+tiles=[1:3;4:6;7:9;10:12];
+tiles=permute(tiles,[2 1]);
+anpos=[0.1, 0.8, 0.1, 0.1;0.55, 0.8, 0.1, 0.1;0.1, 0.3, 0.1, 0.1;0.55, 0.3, 0.1, 0.1];
+for rix = 1:length(region_sublist)
+nexttile(tiles(1,rix))
+plot(Regression.lmNPPIFE.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA %lmRateIFD
+title({region_sublist{rix};'linear'})
+xtxt={'Mean Ice Free Extent (10^6 km^2)'}; %Mean Ice Free Area (10^6 km^2) %Average # Ice Free Days
+xlabel(xtxt,'Interpreter','tex')
+ylabel('Annual NPP (TgC)','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+legend('off')
+if rix==2 ||rix==4
+    ylim([-0.2 inf])
+    yline(0,':k')
+end
+%     str={'R^2=0.606, p<0.001,RMSE=1.43,AIC=65.95'};
+%     annotation('textbox', anpos(1,:),'String',str,'FitBoxToText','on')
+hold on
+nexttile(tiles(2,rix))
+plot(Regression.lmNPPIFEquad.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA %lmRateIFD
+title({region_sublist{rix};'quadratic'})
+xtxt={'Mean Ice Free Extent (10^6 km^2)'}; %Mean Ice Free Area (10^6 km^2) %Average # Ice Free Days
+xlabel(xtxt,'Interpreter','tex')
+ylabel('Annual NPP (TgC)','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+legend('off')
+if rix==2 ||rix==4
+    ylim([-0.2 inf])
+    yline(0,':k')
+end
+%     str={'R^2=0.648, p<0.001,RMSE=1.36,AIC=64.75'};
+%     annotation('textbox', anpos(2,:),'String',str,'FitBoxToText','on')
+hold on
+nexttile(tiles(3,rix))
+plot(Regression.lmNPPIFElog.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA %lmRateIFD
+title({region_sublist{rix};'log-log'})
+xtxt={'LOG Mean Ice Free Extent (km^2)'}; %Mean Ice Free Area (10^6 km^2) %Average # Ice Free Days
+xlabel(xtxt,'Interpreter','tex')
+ylabel('LOG Annual NPP (TgC)','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+legend('off')
+% if rix==2 ||rix==4
+%     ylim([-0.2 inf])
+%     yline(0,':k')
+% end
+%     str={'R^2=0.799, p<0.001,RMSE=0.584,AIC=33.60'};
+%     annotation('textbox', anpos(3,:),'String',str,'FitBoxToText','on')
+hold on
+end
+% make a power curve function in curvefitting tool
+curveX=Regression.MeanIFE.(region_sublist{rix})(1:18);
+curveY=Regression.NPP_AnTot.(region_sublist{rix})(1:18);
+curveXlog=log(Regression.MeanIFE.(region_sublist{rix})(1:18));
+curveYlog=log(Regression.NPP_AnTot.(region_sublist{rix})(1:18));
 
 %% plot
 close(figure(5))
