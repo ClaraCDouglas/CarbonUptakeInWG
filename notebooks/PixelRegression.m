@@ -1,14 +1,14 @@
 %% pixel by pixel
 data_daily=true;
 data_8day=false;
-load data
-cd 'D:\Data\SeaIceNIMBUS';
-if data_daily
-    load('SeaIce_daily_20022020.mat')
-    load('SeaIce_8day_20022020.mat','g_area','g_lat','g_lon')
-elseif data_8day
-    load('SeaIce_8day_20022020.mat')
-end
+% load data
+% cd 'D:\Data\SeaIceNIMBUS';
+% if data_daily
+%     load('SeaIce_daily_20022020.mat')
+%     load('SeaIce_8day_20022020.mat','g_area','g_lat','g_lon')
+% elseif data_8day
+%     load('SeaIce_8day_20022020.mat')
+% end
 cd 'C:\Users\ccd1n18\Documents\Projects\CarbonUptakeInWG\data\processed' % laptop
 
 load('ProcessedCAFEArrays_May22.mat')
@@ -16,7 +16,7 @@ algorithm='cafe'
 % Selecting values within region boxes only
 for aix = 1:length(algorithm)
     for rix = 1:length(region_sublist)
-        for yix=2003:2021
+        for yix=2003:2020
             temp_icefreedays=IceFreeDays_peryear(:,:,yix-2002);
             temp_icefreedays=round(temp_icefreedays);
             IceFree_pixels_years.(region_sublist{rix})(:,yix-2002)=temp_icefreedays(temp.(region_sublist{rix}).box_logic);
@@ -58,7 +58,7 @@ end
 
 
 %% Pixel Regression
-glmFIT='polynomial3'%'quadratic'%'linear'
+glmFIT='quadratic'%'quadratic'%'linear'%polynomial3
 for rix=1:length(region_sublist)
     switch glmFIT
         case 'linear'
@@ -140,16 +140,16 @@ for rix=1%:length(region_sublist)
 end
 
 
-figure;
-t = tiledlayout(2,2)
-for rix=1:length(region_sublist)
-nexttile
-boxplot(AnAvDayRate_pixels_years_COL.(region_sublist{rix}),IceFree_pixels_years_COL.(region_sublist{rix}))
-    title((region_sublist{rix}))
-    xlabel('Number of ice free days (number of days NPP data is available)')
-    ylabel('Mean daily NPP (g m^{-2} d^{-1})','Interpreter','tex')
-end
-
+% figure;
+% t = tiledlayout(2,2)
+% for rix=1:length(region_sublist)
+% nexttile
+% boxplot(AnAvDayRate_pixels_years_COL.(region_sublist{rix}),IceFree_pixels_years_COL.(region_sublist{rix}))
+%     title((region_sublist{rix}))
+%     xlabel('Number of ice free days (number of days NPP data is available)')
+%     ylabel('Mean daily NPP (g m^{-2} d^{-1})','Interpreter','tex')
+% end
+% 
 
 for rix = 1:length(region_sublist)
     [rho.(region_sublist{rix}),p.(region_sublist{rix})]=corr(AnnualNPPRate_pixels_years_mean.(region_sublist{rix}),IceFree_pixels_years_mean.(region_sublist{rix}),'Type','Pearson')
@@ -173,6 +173,7 @@ ylim([0 Inf])
 xlabel('Number of ice free days (number of days NPP data is available)')
 ylabel('Annual NPP (g m^{-2})','Interpreter','tex')
 title((region_sublist{rix}))
+set(gca,'Layer','top');
 end
 
 %calc mean for each IFD bin
@@ -206,13 +207,14 @@ h=histogram2(IceFree_pixels_years_COL.(region_sublist{rix}),AnnualNPPRate_pixels
 h.EdgeColor='None';
 colormap(cmocean('matter'));
 colorbar
-xlim([0 Inf])
-ylim([0 Inf])
+xlim([0 275])
+ylim([0 135])
 xlabel('Number of ice free days (number of days NPP data is available)')
 ylabel('Annual NPP (g m^{-2})','Interpreter','tex')
 hold on
 plot(midbin.(region_sublist{rix}),IFDbinMeanNPP.(region_sublist{rix}),'k-o')
 title((region_sublist{rix}))
+set(gca,'Layer','top');
 end
 txt={'Density distribution of IFD and Area Normalised Annual NPP','Black circles represent mean NPP in each IFD bin'};
 sgtitle(txt)
@@ -221,7 +223,7 @@ sgtitle(txt)
 for rix=1:length(region_sublist)
     figure;
     tiledlayout('flow')
-    for yix=2003:2021
+    for yix=2003:2020
         Regression.tbl_pixelsYEARsel.(region_sublist{rix})=table(IceFree_pixels_years_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix),...
             AnnualNPPRate_pixels_years_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix),...
             ... %categorical(YEARS_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix)),
@@ -234,8 +236,8 @@ for rix=1:length(region_sublist)
         title(yix)
         legend('off')
         sgtitle(region_sublist{rix})
-        ylim([0 Inf])
-        xlim([0 Inf])
+        ylim([0 275])
+        xlim([0 135])
     end
 end
 
@@ -244,7 +246,7 @@ CurveFits = struct();
 makeplot=0;
 for rix=1:length(region_sublist)
 figure; tiledlayout('flow')
-    for yix=2003:2021
+    for yix=2003:2020
         x_IFD=IceFree_pixels_years_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix);
         y_NPP=AnnualNPPRate_pixels_years_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix);
         
@@ -269,8 +271,16 @@ figure; tiledlayout('flow')
     end
     sgtitle(region_sublist{rix})
 end
+close all
 
+% Curvefits for all data together
+for rix=1:length(region_sublist)
+    x_IFD=IceFree_pixels_years_COL.(region_sublist{rix});
+    y_NPP=AnnualNPPRate_pixels_years_COL.(region_sublist{rix});
+    CurveFits.(region_sublist{rix}).p = polyfit(x_IFD,y_NPP,2);
+end
 % together again
+coloryears=cmocean('haline',length(2003:2020));
 figure;
 tiledlayout('flow')
 for rix=1:length(region_sublist)
@@ -290,15 +300,18 @@ for rix=1:length(region_sublist)
     hold on
     title((region_sublist{rix}))
     
-    for yix=2003:2021
-        x_IFD=IceFree_pixels_years_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix);
-        x1 = linspace(0,max(x_IFD));
-        fn = sprintf('n%d', yix );
-        y1 = polyval(CurveFits.(region_sublist{rix}).(fn).p,x1);
-        plot(x1,y1,'k','LineWidth',1)
-    end
-    plot(midbin.(region_sublist{rix}),IFDbinMeanNPP.(region_sublist{rix}),'b-o','MarkerFaceColor','b')
-    %axis=gca; uistack(gca,'top');
+%     for yix=2003:2020
+%         x_IFD=IceFree_pixels_years_COL.(region_sublist{rix})(YEARS_COL.(region_sublist{rix})==yix);
+%         x1 = linspace(0,max(x_IFD));
+%         fn = sprintf('n%d', yix );
+%         y1 = polyval(CurveFits.(region_sublist{rix}).(fn).p,x1);
+%         plot(x1,y1,'Color',coloryears(yix-2002,:),'LineWidth',2)
+%     end
+    x_IFD=IceFree_pixels_years_COL.(region_sublist{rix});
+    x1 = linspace(0,max(x_IFD));
+    y1 = polyval(CurveFits.(region_sublist{rix}).p,x1);
+    plot(x1,y1,'Color','k','LineWidth',3)
+   plot(midbin.(region_sublist{rix}),IFDbinMeanNPP.(region_sublist{rix}),'b-o','MarkerFaceColor','w')
     set(gca,'Layer','top');
 end
 txt={'Density distribution of IFD and Area Normalised Annual NPP','Blue circles represent mean NPP in each IFD bin','Black lines are the annual regressions'};
@@ -326,6 +339,18 @@ for rix=1:length(region_sublist)
     disp(Regression.lm_PixelM.(region_sublist{rix}))
     % Regression.lm_Pixelmedian.(region_sublist{rix})=fitlm(Regression.tbl_pixels_meanmed.(region_sublist{rix}),'AnNPPrateMedian~IceFreeMedian');
     %  disp(Regression.lm_Pixelmedian.(region_sublist{rix}))
+end
+% Curvefits for all pixel means
+for rix=1:length(region_sublist)
+    x_IFD=IceFree_pixels_MEANS.(region_sublist{rix});
+    y_NPP=AnnualNPPRate_pixels_MEAN.(region_sublist{rix});
+    idx = isnan(y_NPP);
+    idxx = isnan(x_IFD);
+    if sum(idx)==sum(idxx)
+    CurveFits.(region_sublist{rix}).p_means = polyfit(x_IFD(~idx),y_NPP(~idx),2);
+    else
+        disp(sad)
+    end
 end
 
 figure;
@@ -387,6 +412,40 @@ for rix=1:length(region_sublist)
     sgtitle({'Pixel mean IFD vs pixel mean NPP with STD',(region_sublist{rix})})
 end
 
+% as hist
+figure;
+tiledlayout('flow')
+for rix=1:length(region_sublist)
+    nexttile
+    Yedges = [0:5:(max(AnnualNPPRate_pixels_MEAN.(region_sublist{rix}))+10)];
+    Xedges = [0:10:(max(IceFree_pixels_MEANS.(region_sublist{rix}))+10)];
+    h=histogram2(IceFree_pixels_MEANS.(region_sublist{rix}),AnnualNPPRate_pixels_MEAN.(region_sublist{rix}),...
+        Xedges,Yedges,'Normalization','probability',...
+        'DisplayStyle','tile','ShowEmptyBins','off')
+    h.EdgeColor='None';
+    colormap(cmocean('matter'));
+    colorbar
+    xlabel('Number of ice free days (number of days NPP data is available)')
+    ylabel('Annual NPP (g m^{-2})','Interpreter','tex')
+    hold on
+    title((region_sublist{rix}))
+
+    x_IFD=IceFree_pixels_MEANS.(region_sublist{rix});
+    x1 = linspace(0,max(x_IFD));
+    y1 = polyval(CurveFits.(region_sublist{rix}).p_means,x1);
+    plot(x1,y1,'Color','k','LineWidth',3)
+
+    x_IFD=IceFree_pixels_years_COL.(region_sublist{rix});
+    x1 = linspace(0,max(x_IFD));
+    y1 = polyval(CurveFits.(region_sublist{rix}).p,x1);
+    plot(x1,y1,'Color','w','LineWidth',3)
+    xlim([0 Inf])
+    ylim([0 Inf])
+    set(gca,'Layer','top');
+end
+txt={'Density distribution of mean IFD and mean Area Normalised Annual NPP for each pixel (only when pixel is ice free)',...
+    'Black line is regression for pixel means','White line is the regression for all the pixels in all the years'};
+sgtitle(txt)
 
 %% means regressions by year
 for rix = 1:length(region_sublist)
