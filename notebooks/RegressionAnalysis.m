@@ -129,14 +129,11 @@ Regression.tbl.(region_sublist{rix})=table(Regression.Year(1:18),Regression.Mean
     Regression.IFDav.(region_sublist{rix})(1:18),Regression.IFDmax.(region_sublist{rix})(1:18),...
     Regression.NPP_AnTot_sqrt.(region_sublist{rix})(1:18),...
     'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIEm','IFEm','SIAm','IFAm','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
-
 % Regression.lmNPPSIE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE');
 % Regression.lmNPPSIA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIA');
-
 %       Total NPP vs IFE/IFA
 % Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE');
 % Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA');
-% 
 % % quadratic
 % % Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE','purequadratic');
 % % Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA','purequadratic');
@@ -151,64 +148,81 @@ Regression.tbl.(region_sublist{rix})=table(Regression.Year(1:18),Regression.Mean
 % Regression.lmNPPIFDmax.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFDmax');
 % %       Area-normalised NPP vs IFD
 % Regression.lmRateIFD.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~IFDav');
-% 
 % Regression.lmNPPdif.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE_dif');
 % Regression.lmRatedif.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~SIE_dif');
-
 %       Total NPP vs maxIFE/IFA
 Regression.lmNPPSIEm.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIEm');
 Regression.lmNPPIFEm.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFEm');
 Regression.lmNPPIFAm.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFAm');
- disp(Regression.lmNPPSIEm.(region_sublist{rix}))
-%  disp(Regression.lmNPPIFEm.(region_sublist{rix}))
-
+disp(Regression.lmNPPIFAm.(region_sublist{rix}))
+Regression.lmNPPIFAmIFD.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFAm+IFDav');
+disp(Regression.lmNPPIFAmIFD.(region_sublist{rix}))
 end
 model_list={'lmNPPIFE','lmNPPIFA','lmRateIFE','lmGSRateIFA','lmNPPIFD','lmNPPIFDmax','lmRateIFD','lmNPPdif'};
 
-% REMOVING SHELF OUTLIERS
+% REMOVING big cook distance OUTLIERS
 for rix = 1:length(region_sublist)
-Regression.tbl.(region_sublist{rix})=table(Regression.Year(4:18),Regression.MeanSIE.(region_sublist{rix})(4:18),Regression.MeanIFE.(region_sublist{rix})(4:18),...
-    Regression.MeanSIA.(region_sublist{rix})(4:18),Regression.MeanIFA.(region_sublist{rix})(4:18),...
-    Regression.MinSIE.(region_sublist{rix})(4:18),Regression.MaxIFE.(region_sublist{rix})(4:18),...
-    Regression.MinSIA.(region_sublist{rix})(4:18),Regression.MaxIFA.(region_sublist{rix})(4:18),...
-    Regression.SIE_dif.(region_sublist{rix})(4:18),...
-    Regression.NPP_AnTot.(region_sublist{rix})(4:18),Regression.NPP_AnRate.(region_sublist{rix})(4:18),Regression.NPP_AvGSRate.(region_sublist{rix})(4:18),...
-    Regression.IFDav.(region_sublist{rix})(4:18),Regression.IFDmax.(region_sublist{rix})(4:18),...
-    Regression.NPP_AnTot_sqrt.(region_sublist{rix})(4:18),...
-    'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIEm','IFEm','SIAm','IFAm','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
+figure; plotDiagnostics(Regression.lmNPPIFAm.(region_sublist{rix}),'cookd')
+title((region_sublist{rix}))
+end
+close all
+for rix = 1:length(region_sublist)
+    if rix ==1
+        Regression.tbl_out.(region_sublist{rix})=table(Regression.Year(3:18),Regression.MeanSIE.(region_sublist{rix})(3:18),Regression.MeanIFE.(region_sublist{rix})(3:18),...
+            Regression.MeanSIA.(region_sublist{rix})(3:18),Regression.MeanIFA.(region_sublist{rix})(3:18),...
+            Regression.MinSIE.(region_sublist{rix})(3:18),Regression.MaxIFE.(region_sublist{rix})(3:18),...
+            Regression.MinSIA.(region_sublist{rix})(3:18),Regression.MaxIFA.(region_sublist{rix})(3:18),...
+            Regression.SIE_dif.(region_sublist{rix})(3:18),...
+            Regression.NPP_AnTot.(region_sublist{rix})(3:18),Regression.NPP_AnRate.(region_sublist{rix})(3:18),Regression.NPP_AvGSRate.(region_sublist{rix})(3:18),...
+            Regression.IFDav.(region_sublist{rix})(3:18),Regression.IFDmax.(region_sublist{rix})(3:18),...
+            Regression.NPP_AnTot_sqrt.(region_sublist{rix})(3:18),...
+            'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIEm','IFEm','SIAm','IFAm','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
+    end
+    if rix ==2
+        Regression.tbl_out.(region_sublist{rix})=table(Regression.Year(4:18),Regression.MeanSIE.(region_sublist{rix})(4:18),Regression.MeanIFE.(region_sublist{rix})(4:18),...
+            Regression.MeanSIA.(region_sublist{rix})(4:18),Regression.MeanIFA.(region_sublist{rix})(4:18),...
+            Regression.MinSIE.(region_sublist{rix})(4:18),Regression.MaxIFE.(region_sublist{rix})(4:18),...
+            Regression.MinSIA.(region_sublist{rix})(4:18),Regression.MaxIFA.(region_sublist{rix})(4:18),...
+            Regression.SIE_dif.(region_sublist{rix})(4:18),...
+            Regression.NPP_AnTot.(region_sublist{rix})(4:18),Regression.NPP_AnRate.(region_sublist{rix})(4:18),Regression.NPP_AvGSRate.(region_sublist{rix})(4:18),...
+            Regression.IFDav.(region_sublist{rix})(4:18),Regression.IFDmax.(region_sublist{rix})(4:18),...
+            Regression.NPP_AnTot_sqrt.(region_sublist{rix})(4:18),...
+            'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIEm','IFEm','SIAm','IFAm','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
+    end
+    if rix ==3
+        Regression.tbl_out.(region_sublist{rix})=table(Regression.Year(3:18),Regression.MeanSIE.(region_sublist{rix})(3:18),Regression.MeanIFE.(region_sublist{rix})(3:18),...
+            Regression.MeanSIA.(region_sublist{rix})(3:18),Regression.MeanIFA.(region_sublist{rix})(3:18),...
+            Regression.MinSIE.(region_sublist{rix})(3:18),Regression.MaxIFE.(region_sublist{rix})(3:18),...
+            Regression.MinSIA.(region_sublist{rix})(3:18),Regression.MaxIFA.(region_sublist{rix})(3:18),...
+            Regression.SIE_dif.(region_sublist{rix})(3:18),...
+            Regression.NPP_AnTot.(region_sublist{rix})(3:18),Regression.NPP_AnRate.(region_sublist{rix})(3:18),Regression.NPP_AvGSRate.(region_sublist{rix})(3:18),...
+            Regression.IFDav.(region_sublist{rix})(3:18),Regression.IFDmax.(region_sublist{rix})(3:18),...
+            Regression.NPP_AnTot_sqrt.(region_sublist{rix})(3:18),...
+            'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIEm','IFEm','SIAm','IFAm','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
+    end
+    if rix ==4
+        Regression.tbl_out.(region_sublist{rix})=table(Regression.Year([1:7 9:10 12:18]),Regression.MeanSIE.(region_sublist{rix})([1:7 9:10 12:18]),Regression.MeanIFE.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.MeanSIA.(region_sublist{rix})([1:7 9:10 12:18]),Regression.MeanIFA.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.MinSIE.(region_sublist{rix})([1:7 9:10 12:18]),Regression.MaxIFE.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.MinSIA.(region_sublist{rix})([1:7 9:10 12:18]),Regression.MaxIFA.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.SIE_dif.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.NPP_AnTot.(region_sublist{rix})([1:7 9:10 12:18]),Regression.NPP_AnRate.(region_sublist{rix})([1:7 9:10 12:18]),Regression.NPP_AvGSRate.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.IFDav.(region_sublist{rix})([1:7 9:10 12:18]),Regression.IFDmax.(region_sublist{rix})([1:7 9:10 12:18]),...
+            Regression.NPP_AnTot_sqrt.(region_sublist{rix})([1:7 9:10 12:18]),...
+            'VariableNames',{'Year','SIE','IFE','SIA','IFA','SIEm','IFEm','SIAm','IFAm','SIE_dif','NPP','NPPrate','NPPGSrate','IFDav','IFDmax','NPP_sqrt'}); %
+    end
+    %       Total NPP vs maxIFE/IFA
+    Regression.lmNPPSIEm_out2.(region_sublist{rix})=fitlm(Regression.tbl_out.(region_sublist{rix}),'NPP~SIEm');
+    Regression.lmNPPIFEm_out2.(region_sublist{rix})=fitlm(Regression.tbl_out.(region_sublist{rix}),'NPP~IFEm');
+    Regression.lmNPPIFAm_out2.(region_sublist{rix})=fitlm(Regression.tbl_out.(region_sublist{rix}),'NPP~IFAm');
+    disp(Regression.lmNPPIFAm_out2.(region_sublist{rix}))
+    Regression.lmNPPIFAmIFD_out2.(region_sublist{rix})=fitlm(Regression.tbl_out.(region_sublist{rix}),'NPP~IFAm+IFDav');
+    disp(Regression.lmNPPIFAmIFD_out2.(region_sublist{rix}))
+end
 
-% Regression.lmNPPSIE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE');
-% Regression.lmNPPSIA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIA');
-
-%       Total NPP vs IFE/IFA
-% Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE');
-% Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA');
-% 
-% % quadratic
-% % Regression.lmNPPIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFE','purequadratic');
-% % Regression.lmNPPIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFA','purequadratic');
-% fit
-% %       Area-normalised NPP vs IFE
-% Regression.lmRateIFE.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~IFE');
-% %       Mean daily rate vs IFA
-% Regression.lmGSRateIFA.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPGSrate~IFA');
-% %       Total NPP vs mean IFD
-% Regression.lmNPPIFD.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFDav');
-% %       Total NPP vs max IFD
-% Regression.lmNPPIFDmax.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFDmax');
-% %       Area-normalised NPP vs IFD
-% Regression.lmRateIFD.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~IFDav');
-% 
-% Regression.lmNPPdif.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIE_dif');
-% Regression.lmRatedif.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPPrate~SIE_dif');
-
-%       Total NPP vs maxIFE/IFA
-Regression.lmNPPSIEm.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~SIEm');
-Regression.lmNPPIFEm.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFEm');
-Regression.lmNPPIFAm.(region_sublist{rix})=fitlm(Regression.tbl.(region_sublist{rix}),'NPP~IFAm');
- disp(Regression.lmNPPSIEm.(region_sublist{rix}))
-%  disp(Regression.lmNPPIFEm.(region_sublist{rix}))
-
+for rix = 1:length(region_sublist)
+figure; plotDiagnostics(Regression.lmNPPIFAm_out2.(region_sublist{rix}),'cookd')
+title((region_sublist{rix}))
 end
 
 
@@ -368,7 +382,7 @@ curveYlog=log(Regression.NPP_AnTot.(region_sublist{rix})(1:18));
 
 %% plot
 close(figure(5))
-figure(6);
+figure(7);
 tiledlayout(2,2)
 anpos=[0.1, 0.8, 0.1, 0.1;0.55, 0.8, 0.1, 0.1;0.1, 0.3, 0.1, 0.1;0.55, 0.3, 0.1, 0.1];
 for rix = 1:length(region_sublist)
@@ -381,7 +395,7 @@ for rix = 1:length(region_sublist)
 legend('off')
     %     l=legend;
 %     l.Location='southeast';
-    if rix==2
+    if rix==2 || rix==4
         ylim([-0.2 inf])
         yline(0,':k')
     end
@@ -392,6 +406,33 @@ legend('off')
     str={'R^2=' num2str(R2),' p=' num2str(p);'NPP=' num2str(m) '*max IFE+' num2str(c)};
     str2={strjoin(str(1:2:8));strjoin(str(2:2:8))};
     annotation('textbox', anpos(rix,:),'String',str2,'FitBoxToText','on')
+    sgtitle('All data')
+end
+figure(5);
+tiledlayout(2,2)
+anpos=[0.1, 0.8, 0.1, 0.1;0.55, 0.8, 0.1, 0.1;0.1, 0.3, 0.1, 0.1;0.55, 0.3, 0.1, 0.1];
+for rix = 1:length(region_sublist)
+    nexttile
+    plot(Regression.lmNPPIFAm_out2.(region_sublist{rix})) %lmNPPIFA %lmRateIFE %lmGSRateIFA %lmRateIFD
+    title((region_sublist{rix}))
+    xtxt={'Max Ice Free Area (10^6 km^2)'}; %Mean Ice Free Area (10^6 km^2) %Average # Ice Free Days
+    xlabel(xtxt,'Interpreter','tex')
+    ylabel('Annual NPP (TgC)','Interpreter','tex') %Annual NPP (TgC) %Annual NPP (gC m^2 a^{-1}) %Growing Season NPP (mg m^{-2} d^{-1})
+legend('off')
+    %     l=legend;
+%     l.Location='southeast';
+    if rix==2 || rix==4
+        ylim([-0.2 inf])
+        yline(0,':k')
+    end
+    c=Regression.lmNPPIFAm_out2.(region_sublist{rix}).Coefficients{1,1};
+    m=Regression.lmNPPIFAm_out2.(region_sublist{rix}).Coefficients{2,1};
+    R2=Regression.lmNPPIFAm_out2.(region_sublist{rix}).Rsquared.Adjusted;
+    p=Regression.lmNPPIFAm_out2.(region_sublist{rix}).Coefficients{2,4};
+    str={'R^2=' num2str(R2),' p=' num2str(p);'NPP=' num2str(m) '*max IFE+' num2str(c)};
+    str2={strjoin(str(1:2:8));strjoin(str(2:2:8))};
+    annotation('textbox', anpos(rix,:),'String',str2,'FitBoxToText','on')
+    sgtitle('Outliers removed based on Cooks Distance')
 end
 
 close(figure(10))
